@@ -1985,7 +1985,7 @@ const DataModule = {
         const spots = DataModule._parse(json);
 
         const hash = spots.map(s =>
-            `${s.id}|${s.status}|${s.news}|${s.url || ''}|${s.imageUrl || ''}|${s.imageUrl2 || ''}|${s.imageUrl3 || ''}|${s.address || ''}|${s.phone || ''}|${s.hours || ''}|${(s.tags || []).join('+')}|${s.tagline || ''}`
+            `${s.id}|${s.status}|${s.news}|${s.url || ''}|${s.imageUrl || ''}|${s.imageUrl2 || ''}|${s.imageUrl3 || ''}|${s.address || ''}|${s.phone || ''}|${s.hours || ''}|${(s.tags || []).join('+')}|${s.tagline || ''}|${s.tagline_en || ''}`
         ).join(',');
         const loadingEl = document.getElementById('loading');
         const isInitialLoad = loadingEl && loadingEl.style.display !== 'none';
@@ -2046,7 +2046,8 @@ const DataModule = {
 
             const hours   = row.c[COLS.HOURS]?.v   != null ? String(row.c[COLS.HOURS].v)   : '';
             const hoursEn = row.c[COLS.HOURS_EN]?.v != null ? String(row.c[COLS.HOURS_EN].v) : '';
-            const tagline = row.c[COLS.TAGLINE]?.v != null ? String(row.c[COLS.TAGLINE].v).trim() : '';
+            const tagline   = row.c[COLS.TAGLINE]?.v   != null ? String(row.c[COLS.TAGLINE].v).trim()   : '';
+            const taglineEn = row.c[COLS.TAGLINE_EN]?.v != null ? String(row.c[COLS.TAGLINE_EN].v).trim() : '';
 
             acc.push({
                 id,
@@ -2078,7 +2079,8 @@ const DataModule = {
                 tags_en:    tagsEn,
                 hours,
                 hours_en:   hoursEn,
-                tagline
+                tagline,
+                tagline_en: taglineEn
             });
             return acc;
         }, []);
