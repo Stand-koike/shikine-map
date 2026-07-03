@@ -50,13 +50,13 @@ const SETUP_SOURCE = {
   GPS: 'gps'
 };
 
-/** docs/samples/spreadsheet-headers.csv と同一（31 列・A=_reserved …） */
+/** docs/samples/spreadsheet-headers.csv と同一（32 列・A=_reserved …） */
 const MASTER_HEADERS = [
   '_reserved', 'name', 'lat', 'lng', 'emoji', 'image_url', 'desc', 'category', 'hidden',
   'store_id', 'reserved', 'status', 'news', 'url', 'coupon',
   'name_en', 'desc_en', 'category_en', 'news_en', 'url_en', 'coupon_en',
   'address', 'address_en', 'phone', 'phone_en', 'tags', 'tags_en', 'hours', 'hours_en',
-  'image_url_2', 'image_url_3'
+  'image_url_2', 'image_url_3', 'tagline'
 ];
 
 /**

@@ -41,7 +41,7 @@
         //   R(address), S(phone), T(tags), U(hours),
         //   V(name_en), W(desc_en), X(category_en), Y(status_en),
         //   Z(news_en), AA(url_en), AB(coupon_en), AC(address_en),
-        //   AD(phone_en), AE(tags_en), AF(hours_en)
+        //   AD(phone_en), AE(tags_en), AF(hours_en), AG(tagline)
         // ----------------------------------------------------------------
         COLS: {
             NAME: 1, LAT: 2, LNG: 3, EMOJI: 4,
@@ -52,7 +52,7 @@
             ADDRESS: 17, PHONE: 18, TAGS: 19, HOURS: 20,
             NAME_EN: 21, DESC_EN: 22, CAT_EN: 23, STATUS_EN: 24,
             NEWS_EN: 25, LINK_URL_EN: 26, COUPON_EN: 27, ADDRESS_EN: 28, PHONE_EN: 29,
-            TAGS_EN: 30, HOURS_EN: 31
+            TAGS_EN: 30, HOURS_EN: 31, TAGLINE: 32
         },
 
         COLORS: { DEFAULT: '#0096C7', RED: '#FF5252', YELLOW: '#FFCA28' },

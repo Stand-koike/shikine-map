@@ -99,6 +99,7 @@ production/
 | AD | 29 | phone_en | `PHONE_EN` | |
 | AE | 30 | tags_en | `TAGS_EN` | |
 | AF | 31 | hours_en | `HOURS_EN` | |
+| AG | 32 | tagline | `TAGLINE` | タグライン（任意・未入力時は空） |
 
 列を追加・移動した場合は `web/config.js` の `COLS` を更新し、本表も合わせて修正すること。
 
