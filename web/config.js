@@ -128,7 +128,9 @@
             'トイレ':         'toilet.png',
             '駐車場':         'parking.png',
             'ビュースポット': 'viewspot.png',
-            'バス停':         'busstop.png'
+            'バス停':         'busstop.png',
+            '釣り':           'fishing.png',
+            '磯遊び':         'isobasobi.png'
         },
         FIXED_PIN_SIZE: 40,
 

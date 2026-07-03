@@ -8,5 +8,7 @@
 | `parking.png`  | 駐車場                           |
 | `viewspot.png` | ビュースポット                   |
 | `busstop.png`  | バス停                           |
+| `fishing.png`  | 釣り                             |
+| `isobasobi.png`| 磯遊び                           |
 
 画像が未配置の場合は絵文字でフォールバック表示されます。
