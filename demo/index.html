@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>外浦マップ デモ動画</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 24px 16px;
+      font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      background: #e8f4f8;
+      color: #1a3a4a;
+    }
+    h1 { font-size: 1.1rem; margin: 0; text-align: center; }
+    video {
+      width: min(390px, 100%);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 100, 180, 0.2);
+      background: #000;
+    }
+    a {
+      color: #0077b6;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h1>外浦マップ 操作デモ（約26秒）</h1>
+  <video controls playsinline preload="metadata" poster="">
+    <source src="sotoura-map-demo.mp4" type="video/mp4">
+    お使いのブラウザは動画再生に対応していません。
+  </video>
+  <p><a href="sotoura-map-demo.mp4" download>MP4をダウンロード</a></p>
+</body>
+</html>
