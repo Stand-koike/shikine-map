@@ -14,6 +14,10 @@
 
 ---
 
+## 新エリアを追加する
+
+別の地域で同じマップ機能を公開する手順は [docs/AREA_MIGRATION_GUIDE.md](docs/AREA_MIGRATION_GUIDE.md) を参照してください。
+
 ## WordPress 連携
 
 かわら版を WordPress サイトに表示する手順は [docs/WORDPRESS_INTEGRATION.md](docs/WORDPRESS_INTEGRATION.md) を参照してください。

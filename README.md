@@ -26,6 +26,7 @@ Google スプレッドシートの店舗データを、イラスト地図上に�
 | 資料 | 内容 |
 |------|------|
 | [web/README.md](web/README.md) | ファイル構成 |
+| [web/docs/AREA_MIGRATION_GUIDE.md](web/docs/AREA_MIGRATION_GUIDE.md) | **新エリア**を同機能で立ち上げる手順 |
 | [web/docs/WORDPRESS_INTEGRATION.md](web/docs/WORDPRESS_INTEGRATION.md) | WordPress へのかわら版埋め込み |
 | [SECURITY.md](SECURITY.md) | 秘密情報の扱い |
 
