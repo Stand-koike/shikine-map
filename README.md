@@ -44,7 +44,8 @@ npx --yes serve web
 |------|------|
 | [web/README.md](web/README.md) | ファイル構成 |
 | [web/docs/SHEET_SETUP_SHIKINE.md](web/docs/SHEET_SETUP_SHIKINE.md) | スプレッドシートの作り方 |
-| [web/docs/REPO_SETUP_SHIKINE.md](web/docs/REPO_SETUP_SHIKINE.md) | **shikine-map** リポジトリの作成 |
+| [web/docs/REPO_SETUP_SHIKINE.md](web/docs/REPO_SETUP_SHIKINE.md) | **shikine-map** リポジトリの作成（完了済みの場合は参照用） |
+| [web/docs/AREA_MIGRATION_GUIDE.md](web/docs/AREA_MIGRATION_GUIDE.md) | **新エリア**を同機能で立ち上げる手順 |
 | [SECURITY.md](SECURITY.md) | 秘密情報の扱い |
 
 ---
