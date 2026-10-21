@@ -44,6 +44,7 @@ npx --yes serve web
 |------|------|
 | [web/README.md](web/README.md) | ファイル構成 |
 | [web/docs/SHEET_SETUP_SHIKINE.md](web/docs/SHEET_SETUP_SHIKINE.md) | スプレッドシートの作り方 |
+| [web/docs/REPO_SETUP_SHIKINE.md](web/docs/REPO_SETUP_SHIKINE.md) | **shikine-map** リポジトリの作成 |
 | [SECURITY.md](SECURITY.md) | 秘密情報の扱い |
 
 ---
