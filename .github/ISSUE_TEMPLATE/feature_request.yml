@@ -1,0 +1,55 @@
+name: 機能・UI の要望
+description: マップのやりたいこと・直したいことを記録（モバイルからでも OK）
+title: "[要望] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        チャットで Agent に伝えても同じです。Issue に残すと後から探しやすくなります。
+        詳細は `web/docs/FEATURE_BACKLOG.md` も参照してください。
+  - type: textarea
+    id: goal
+    attributes:
+      label: 目的
+      description: 誰が何を楽にするか
+      placeholder: 例: 来場者がトイレの位置をすぐ見つけたい
+    validations:
+      required: true
+  - type: dropdown
+    id: screen
+    attributes:
+      label: 主な画面
+      options:
+        - マップ全体
+        - 下のカード一覧（モバイル）
+        - 店舗詳細モーダル
+        - フィルタ・タグ
+        - その他
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 優先度
+      options:
+        - 必須（フェス前に）
+        - あったら良い
+        - 後回し
+    validations:
+      required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: 具体的なイメージ
+      description: スクショ・外浦マップの「ここと同じ」など
+      placeholder: 箇条書きで OK
+  - type: dropdown
+    id: device
+    attributes:
+      label: 特に気になる端末
+      options:
+        - 指定なし
+        - iPhone Safari
+        - Android Chrome
+        - PC のみ
