@@ -14,6 +14,10 @@
 
 ---
 
+## 新エリアを追加する
+
+別の地域で同じマップ機能を公開する手順は [docs/AREA_MIGRATION_GUIDE.md](docs/AREA_MIGRATION_GUIDE.md) を参照してください。
+
 ## スプレッドシート
 
 出店データの列定義と作成手順は [docs/SHEET_SETUP_SHIKINE.md](docs/SHEET_SETUP_SHIKINE.md) を参照してください。
