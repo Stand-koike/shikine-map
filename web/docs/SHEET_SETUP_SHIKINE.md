@@ -1,47 +1,48 @@
 # 敷根公園フェスマップ — スプレッドシートの準備
 
-フェス用の **店舗・ブース一覧** を 1 シートで管理します。列レイアウトは外浦マップと同じです（`web/config.js` の `COLS`）。
+**ピン種別・件数の設計**は [PIN_INVENTORY_SHIKINE.md](PIN_INVENTORY_SHIKINE.md) を先に読んでください（総合運動公園・飲食4＋固定7）。
+
+同一スプレッドシート内に次のシートを想定します（**シート名は運営が決定**したら `config.js` に反映）。
+
+| シート | 用途 | config |
+|--------|------|--------|
+| 店舗マスタ（先頭シート可） | 飲食 4 店 | gviz デフォルト（先頭シート） |
+| 固定マスタ | トイレ・ステージ・キッズ・WS | `FIXED_MASTER_SHEET` |
+| `posts` | LINE かわら版（飲食） | LINE 有効化後。 [LINE_KAWARA_SHIKINE.md](LINE_KAWARA_SHIKINE.md) |
 
 ---
 
 ## 1. 新規スプレッドシートを作る
 
 1. Google スプレッドシートで新規作成。
-2. 1 枚目のシート名は **`Sheet1`** のままでも可（gviz は **gid=0 の先頭シート** を読みます）。運用で名前を変える場合は、公開 URL の `gid` を確認してください。
+2. **店舗マスタ**を 1 枚目にし、2 枚目に **固定マスタ**（名前は未決の間は仮で可）。
 3. **共有**: 「リンクを知っている全員」**閲覧者**。
+
+ヘッダー行はコピー用 CSV:
+
+- [sheets/店舗マスタ_ヘッダー.csv](sheets/店舗マスタ_ヘッダー.csv)
+- [sheets/固定マスタ_ヘッダー.csv](sheets/固定マスタ_ヘッダー.csv)
 
 ---
 
-## 2. 1 行目（ヘッダー）
+## 2. 列レイアウト（`web/config.js` の `COLS`）
 
-次の列を **A 列から** 入れます（英語名はツール用。日本語ラベルでも可ですが、列の**順序**が重要です）。
+**B 列 = name**（A 列 `_reserved` は空で可）。列番号は gviz の `row.c[n]` に対応。
 
 | 列 | ヘッダー例 | 用途 |
 |----|------------|------|
 | A | _reserved | 空で可 |
-| B | name | ブース名 |
-| C | lat | 緯度（WGS84） |
-| D | lng | 経度 |
+| B | name | 表示名 |
+| C–D | lat, lng | 緯度・経度（WGS84） |
 | E | emoji | ピン絵文字（任意） |
-| F–H | image_url … | 画像 URL（任意・枚数はデータに合わせて可変） |
-| I | desc | 説明 |
-| J | category | カテゴリ（フィルタ用） |
-| K | hidden | `TRUE` で非表示 |
-| L | store_id | 一意 ID（ディープリンク `?spot=` 用） |
-| M | reserved | 空で可 |
-| N | status | 営業状況テキスト（任意） |
-| O–P | news, url | 補足・リンク（任意） |
-| Q | coupon | クーポン URL（任意） |
-| R–U | address, phone, tags, hours | 任意 |
-| V 以降 | name_en, desc_en, … | 英語（任意） |
+| F–H | image_url … | モーダル画像 1〜3（HTTPS）。マーカーは F を優先 |
+| I | desc | 説明（WS はここに長文） |
+| J | category | フィルタ用 / 固定ピンは `FIXED_PIN_ICONS` のキー |
+| K | hidden | **`FALSE` の行は非表示**（外浦同型。`TRUE` または空は表示） |
+| L | store_id | 一意 ID（飲食は LINE 必須） |
+| M 以降 | status, news, … | 任意 |
 
-最小のテスト行（2 行目）例:
-
-| name | lat | lng | emoji | category | store_id |
-|------|-----|-----|-------|----------|----------|
-| テストブース | 34.6820 | 138.9308 | 🎪 | グルメ | booth_test |
-
-`hidden` 列に `TRUE` を入れた行は表示されません。
+座標は **総合運動公園イラスト**の `MAP_IMAGE.coordinates` が決まってから配置するのが確実です（未決の間は行を空にしておく）。
 
 ---
 
@@ -50,22 +51,21 @@
 URL `https://docs.google.com/spreadsheets/d/【ここがID】/edit` の ID を控えます。
 
 - **ローカル**: `web/secrets.local.js` の `SHEET_ID`
-- **本番**: GitHub リポジトリの Actions secret `GOOGLE_SHEET_ID`
+- **本番**: GitHub Actions secret `GOOGLE_SHEET_ID`
+
+固定マスタのシート名が決まったら `config.js` の `FIXED_MASTER_SHEET` に設定（未決の間は `null` のまま）。
 
 ---
 
-## 4. 使わないシート
+## 4. LINE・posts（飲食のみ・任意タイミング）
 
-次は **作成不要** です。
+`posts` と GAS は **LINE 運用開始時**に追加。現状は `ENABLE_LIVE_POSTS: false`。
 
-- `posts`（LINE かわら版）
-- `固定マスタ`（トイレ・駐車場レイヤー）
-- `event_schedule`
-
-`config.js` で `ENABLE_LIVE_POSTS: false` / `FIXED_MASTER_SHEET: null` になっています。
+手順: [LINE_KAWARA_SHIKINE.md](LINE_KAWARA_SHIKINE.md)
 
 ---
 
-## 5. 座標の付け方
+## 5. 使わないもの（敷根フェス）
 
-イラスト地図ができるまで、緯度経度は [Google Maps](https://maps.google.com/) などで敷根公園内の位置をクリックして取得できます。イラストと位置がずれたら、地図の `MAP_IMAGE.coordinates` 調整後にピンを再配置してください。
+- `event_schedule`（イベント自動表示を使う場合のみ外浦設定を参照）
+- `固定マスタ` を使わない運用にはしない（トイレ・ステージ等は固定マスタ想定）

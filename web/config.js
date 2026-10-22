@@ -1,7 +1,9 @@
 /**
  * エリア設定 — 敷根公園フェスマップ（shikine-map）
  *
- * イラスト地図・スプレッドシート未準備時はプレースホルダー座標と map.webp を使用。
+ * イラスト対象: 総合運動公園（四隅座標・map.webp は未差し替えの間はプレースホルダー）。
+ * ピン設計（飲食4 + 固定7）: web/docs/PIN_INVENTORY_SHIKINE.md
+ *
  * ローカル微調整: config.local.js（Git 除外）
  *
  * @see web/docs/SHEET_SETUP_SHIKINE.md
@@ -78,10 +80,19 @@
 
         POLL_INTERVAL: 30000,
 
-        /** 固定施設レイヤー（フェスでは未使用） */
+        /**
+         * 固定マスタシート名（トイレ・ステージ・キッズ・WS）。
+         * シート名が決まったら文字列を設定。未決の間は null。
+         */
         FIXED_MASTER_SHEET: null,
 
-        /** LINE かわら版・ライブ投稿は使わない */
+        /**
+         * category → web/assets/fixed-pins/ 内の PNG。
+         * ファイル名はデザイン決定後に追加（toilet 以外は未設定）。
+         */
+        // FIXED_PIN_ICONS: { toilet: 'toilet.png', stage: '…', kids_play: '…', ws_indoor: '…' },
+
+        /** 飲食 LINE かわら版。GAS・posts 準備後に true。 @see web/docs/LINE_KAWARA_SHIKINE.md */
         ENABLE_LIVE_POSTS: false,
         LIVE_POST_POLL_INTERVAL: 0,
 
