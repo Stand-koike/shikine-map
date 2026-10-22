@@ -1,4 +1,4 @@
-# 外浦マップ — ファイル構成
+# 敷根公園フェスマップ — ファイル構成
 
 このフォルダが GitHub Pages の公開対象です。
 
@@ -14,6 +14,6 @@
 
 ---
 
-## WordPress 連携
+## スプレッドシート
 
-かわら版を WordPress サイトに表示する手順は [docs/WORDPRESS_INTEGRATION.md](docs/WORDPRESS_INTEGRATION.md) を参照してください。
+出店データの列定義と作成手順は [docs/SHEET_SETUP_SHIKINE.md](docs/SHEET_SETUP_SHIKINE.md) を参照してください。

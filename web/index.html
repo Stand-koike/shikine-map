@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>外浦マップ</title>
+    <title>敷根公園フェスマップ</title>
 
     <!-- エリア設定: secrets → config → config.local（任意）。新エリアは config.js のみ編集 -->
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
@@ -2213,6 +2213,7 @@ const PostsModule = {
     _fetchTimeout: null,
 
     fetch() {
+        if (CONFIG.ENABLE_LIVE_POSTS === false) return;
         const cbName = '_gvizPostsCb';
         const oldScript = document.getElementById('gviz-posts-script');
         if (oldScript) oldScript.remove();
@@ -4537,8 +4538,10 @@ const App = {
 
         if (!this._postsInitialized) {
             this._postsInitialized = true;
-            PostsModule.fetch();
-            PostsModule.startPolling();
+            if (CONFIG.ENABLE_LIVE_POSTS !== false) {
+                PostsModule.fetch();
+                PostsModule.startPolling();
+            }
         }
 
         if (spots.length > 0 && this._selectedCategories.size === 0) {

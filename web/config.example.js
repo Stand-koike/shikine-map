@@ -16,7 +16,10 @@
         : {};
 
     window.__SHIMODA_MAP_CONFIG__ = {
-        APP_TITLE: 'YOUR_AREA_MAP',
+        APP_TITLE: '敷根公園フェスマップ',
+
+        ENABLE_LIVE_POSTS: false,
+        FIXED_MASTER_SHEET: null,
 
         GA_MEASUREMENT_ID: '',
 
