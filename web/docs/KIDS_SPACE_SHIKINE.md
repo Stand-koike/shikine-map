@@ -10,7 +10,7 @@
 | 紹介画像 | `assets/kids/wakuwaku-hiroba.webp` |
 | 協力 | **Supported by** — `tagline` 列: `下田Baby&Kids` / `image_url_3`: `assets/kids/sponsor-shimoda-baby-kids.webp` |
 
-`category` が `kids_play` のとき、モーダルでフライヤー画像の下に **Supported by** とロゴ・名称を表示します（`image_url_3` はスライダーに入れません）。
+`category` が `kids_play` のとき、モーダル**下部**（説明のあと・ナビボタンの直前）に **Supported by** とロゴ・名称を小さく表示します（`image_url_3` はスライダーに入れません）。
 
 ## シート入稿
 
