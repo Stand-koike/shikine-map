@@ -120,7 +120,8 @@
                 hours: '営業時間', tags: 'タグ', allTags: 'すべてのタグ', map: 'マップ',
                 urlLink: 'リンク', descLabel: '説明', newsLabel: '補足',
                 timetableTitle: 'タイムテーブル', timetableEmpty: 'スケジュールは準備中です',
-                timetableVenue: '会場'
+                timetableVenue: '会場',
+                applyLink: '参加申込はこちら'
             },
             en: {
                 all: 'All', go: 'Open in Google Maps', coupon: 'Coupon',
@@ -129,7 +130,8 @@
                 hours: 'Hours', tags: 'Tags', allTags: 'All Tags', map: 'Map',
                 urlLink: 'Link', descLabel: 'About', newsLabel: 'Notes',
                 timetableTitle: 'Timetable', timetableEmpty: 'Schedule coming soon',
-                timetableVenue: 'Venue'
+                timetableVenue: 'Venue',
+                applyLink: 'Register here'
             }
         }
     };

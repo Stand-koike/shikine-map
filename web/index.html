@@ -4369,17 +4369,10 @@ const UIModule = {
         items.forEach(item => {
             const div = document.createElement('div');
             div.className = 'timetable-item';
-            const headLine = [item.title, item.performer].filter(Boolean).join(' — ');
-            const showTitle = item.title && item.performer ? item.title : '';
-            const showPerformer = item.performer || (!item.title ? '' : '');
-            const titleHtml = showTitle
-                ? `<div class="timetable-title">${escapeHtml(showTitle)}</div>`
-                : '';
-            const performerHtml = (item.performer && showTitle)
-                ? `<div class="timetable-performer">${escapeHtml(item.performer)}</div>`
-                : (headLine && !showTitle)
-                    ? `<div class="timetable-performer">${escapeHtml(headLine)}</div>`
-                    : '';
+            const titleHtml = item.title
+                ? `<div class="timetable-title">${escapeHtml(item.title)}</div>` : '';
+            const performerHtml = item.performer
+                ? `<div class="timetable-performer">${escapeHtml(item.performer)}</div>` : '';
             const descHtml = item.description
                 ? `<div class="timetable-desc">${escapeHtml(item.description)}</div>` : '';
             const venueHtml = item.venue
@@ -4476,7 +4469,11 @@ const UIModule = {
             urlWrap.style.display = 'flex';
             urlLink.href = urlNorm;
             const labelEl = document.getElementById('modal-url-label');
-            if (labelEl) labelEl.textContent = t('urlLink');
+            const cat = val(spot, 'category');
+            if (labelEl) {
+                labelEl.textContent = (cat === 'ws_indoor' && t('applyLink'))
+                    ? t('applyLink') : t('urlLink');
+            }
         } else if (urlWrap) {
             urlWrap.style.display = 'none';
             if (urlLink) urlLink.removeAttribute('href');
