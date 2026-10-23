@@ -23,8 +23,9 @@
 | K | わくわく広場（キッズ） | **1** | 固定マスタ | 専用ピン PNG（**未決**） | フライヤー画像 + **Supported by 下田Baby&Kids** — [KIDS_SPACE_SHIKINE.md](KIDS_SPACE_SHIKINE.md) |
 | W | 屋内ワークショップ | **2** | 固定マスタ | WS 用 PNG（要デザイン） | **紹介画像** + **desc** + **`link_url` 申込リンク** — 1件目 [WORKSHOPS_SHIKINE.md](WORKSHOPS_SHIKINE.md) |
 | P | 敷根プール（無料開放） | **1** | 固定マスタ | プール用 PNG（**未決**） | フライヤー画像 — [POOL_SHIKINE.md](POOL_SHIKINE.md) |
+| O | 屋内事務所（自然観察） | **1** | 固定マスタ | 事務所用 PNG（**未決**） | フライヤー + **集合：敷根公園事務所** — [OFFICE_SHIKINE.md](OFFICE_SHIKINE.md) |
 
-**合計: 店舗 4 + 固定 8 = 12 ピン**（トイレ3・ステージ1・キッズ1・WS2・プール1）
+**合計: 店舗 4 + 固定 9 = 13 ピン**（トイレ3・ステージ1・キッズ1・WS2・プール1・事務所1）
 
 ---
 

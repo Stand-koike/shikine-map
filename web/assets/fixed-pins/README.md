@@ -17,6 +17,7 @@
 | 子供プレイエリア | 1 | `kids_play` | PNG 未決 |
 | 屋内 WS | 2 | `ws_indoor` | PNG 未決 |
 | プール（無料開放） | 1 | `pool` | PNG 未決 |
+| 屋内事務所 | 1 | `park_office` | PNG 未決 |
 
 詳細: [docs/PIN_INVENTORY_SHIKINE.md](../../docs/PIN_INVENTORY_SHIKINE.md)
 
