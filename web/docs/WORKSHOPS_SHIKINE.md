@@ -16,13 +16,9 @@
 | 問い合わせ | 敷根公園屋内温水プール TEL 0558-23-6333 |
 | 紹介画像 | `assets/workshops/kids-core-training.webp` |
 | `store_id` | `ws_kids_core` |
-| **`link_url`（列 P）** | **QR の申込 URL** — 画像から自動読取できなかったため **シート入稿時に貼り付け**（下記） |
+| **`link_url`（列 P）** | `https://logoform.jp/f/srRs9`（運営提供） |
 
-### 申込 URL の入れ方
-
-1. フライヤー QR を読み取る、または発行元から URL を共有
-2. 固定マスタ行の **`link_url`** に `https://...` を記入
-3. マップ詳細モーダルに **「参加申込はこちら」** リンクが表示（タップで外部ブラウザ）
+マップ詳細モーダルに **「参加申込はこちら」** が表示され、タップで上記フォームを開きます。
 
 固定マスタ 1 行シード: [sheets/fixed_master_ws_kids_core_seed.csv](sheets/fixed_master_ws_kids_core_seed.csv)
 
