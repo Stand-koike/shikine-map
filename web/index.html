@@ -1829,6 +1829,25 @@ function normalizeImageUrl(raw) {
     return s;
 }
 
+/** 店舗マスタの画像列: HTTPS / Drive に加え、リポジトリ同梱の assets/ パスを許可 */
+function resolveSheetMediaUrl(raw) {
+    if (raw == null) return '';
+    const s = String(raw).trim();
+    if (!s) return '';
+    if (/^https?:\/\//i.test(s)) return normalizeImageUrl(s);
+    const rel = s.replace(/^\.\//, '');
+    if (/^assets\//i.test(rel)) {
+        try {
+            const pageBase = window.location.href.replace(/[#?].*$/, '');
+            const dirBase = pageBase.endsWith('/') ? pageBase : pageBase.replace(/\/[^/]*$/, '/');
+            return new URL(rel, dirBase).href;
+        } catch (_) {
+            return '';
+        }
+    }
+    return '';
+}
+
 function timeAgo(date) {
     const diffMs = Date.now() - date.getTime();
     const diffMin = Math.floor(diffMs / 60000);
@@ -2032,17 +2051,9 @@ const DataModule = {
             // hidden 列が false/"FALSE" なら非表示
             if (row.c[COLS.HIDDEN]?.v === false || row.c[COLS.HIDDEN]?.v === 'FALSE') return acc;
 
-            let url = row.c[COLS.URL]?.v || '';
-            if (typeof url !== 'string' || !/^https?:\/\//i.test(url.trim())) url = '';
-            else url = normalizeImageUrl(url);
-
-            let url2 = row.c[COLS.IMAGE_URL_2]?.v || '';
-            if (typeof url2 !== 'string' || !/^https?:\/\//i.test(url2.trim())) url2 = '';
-            else url2 = normalizeImageUrl(url2);
-
-            let url3 = row.c[COLS.IMAGE_URL_3]?.v || '';
-            if (typeof url3 !== 'string' || !/^https?:\/\//i.test(url3.trim())) url3 = '';
-            else url3 = normalizeImageUrl(url3);
+            let url = resolveSheetMediaUrl(row.c[COLS.URL]?.v || '');
+            let url2 = resolveSheetMediaUrl(row.c[COLS.IMAGE_URL_2]?.v || '');
+            let url3 = resolveSheetMediaUrl(row.c[COLS.IMAGE_URL_3]?.v || '');
 
             const storeIdRaw = row.c[COLS.STORE_ID]?.v;
             const storeId = storeIdRaw != null && String(storeIdRaw).trim() !== ''

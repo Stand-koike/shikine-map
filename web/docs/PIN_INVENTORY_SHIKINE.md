@@ -62,18 +62,19 @@ gviz の `row.c[列番号]` です。**A 列 = 0** ではなく、本プロジ�
 
 ---
 
-## 店舗マスタ（飲食 ×4）— 入力テンプレート
+## 店舗マスタ（飲食 ×4）
 
-シート名: **未決**（先頭シートのまま運用するか、名前を付けるかはスプレッドシート作成時に決定）。
+**店名・メニュー・画像**はフライヤーから取り込み済み → [FOOD_VENDORS_SHIKINE.md](FOOD_VENDORS_SHIKINE.md)  
+シート貼り付け用: [sheets/food_vendors_seed.csv](sheets/food_vendors_seed.csv)（**lat/lng・store_id は空**）
 
-| 行 | name | lat | lng | emoji | image_url (F) | desc | category | store_id | 備考 |
-|----|------|-----|-----|-------|---------------|------|----------|----------|------|
-| F1 | | | | | | | | | LINE `posts.store_id` と一致 |
-| F2 | | | | | | | | | |
-| F3 | | | | | | | | | |
-| F4 | | | | | | | | | |
+| 行 | name | image_url (F) | desc（要約） |
+|----|------|---------------|--------------|
+| F1 | 伊豆下田食堂まきまき | `assets/vendors/makimaki.webp` | 肉巻きおにぎり、焼きそば… |
+| F2 | 12 KITCHEN SHIMODA | `assets/vendors/12kitchen-shimoda.webp` | ホットドッグ、ステーキサンド… |
+| F3 | 高橋鳥肉店 | `assets/vendors/takahashi-toriniku.webp` | 焼きとり、もも串… |
+| F4 | 味な菓子処 しまの | `assets/vendors/shimano-kashi.webp` | 下田さく咲く、みたらしだんご… |
 
-`category` の値（例: `飲食` / `グルメ`）は **フィルタ UI に出るラベル**です。4 店とも同じ category にするか分けるかは未決。
+`category` はシードで `フードエリア`（フライヤー見出しに合わせた）。変更可。
 
 ---
 

@@ -21,6 +21,7 @@ LINE かわら版・WordPress 連携は **使いません**（設定で無効化
 | 項目 | 手順 |
 |------|------|
 | ピン一覧・データ項目 | [web/docs/PIN_INVENTORY_SHIKINE.md](web/docs/PIN_INVENTORY_SHIKINE.md) |
+| フード出店 4 店 | [web/docs/FOOD_VENDORS_SHIKINE.md](web/docs/FOOD_VENDORS_SHIKINE.md) |
 | スプレッドシート | [web/docs/SHEET_SETUP_SHIKINE.md](web/docs/SHEET_SETUP_SHIKINE.md) |
 | イラスト地図 | `web/map.webp` に差し替え、`config.js` の `MAP_IMAGE.coordinates` を更新 |
 | 本番公開 | GitHub Secrets（Mapbox・シート ID）→ Pages |
