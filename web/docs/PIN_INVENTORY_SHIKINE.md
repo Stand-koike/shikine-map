@@ -65,14 +65,14 @@ gviz の `row.c[列番号]` です。**A 列 = 0** ではなく、本プロジ�
 ## 店舗マスタ（飲食 ×4）
 
 **店名・メニュー・画像**はフライヤーから取り込み済み → [FOOD_VENDORS_SHIKINE.md](FOOD_VENDORS_SHIKINE.md)  
-シート貼り付け用: [sheets/food_vendors_seed.csv](sheets/food_vendors_seed.csv)（**lat/lng・store_id は空**）
+シート貼り付け用: [sheets/food_vendors_seed.csv](sheets/food_vendors_seed.csv)（**lat/lng は後日**。`store_id` 設定済み）
 
-| 行 | name | image_url (F) | desc（要約） |
-|----|------|---------------|--------------|
-| F1 | 伊豆下田食堂まきまき | `assets/vendors/makimaki.webp` | 肉巻きおにぎり、焼きそば… |
-| F2 | 12 KITCHEN SHIMODA | `assets/vendors/12kitchen-shimoda.webp` | ホットドッグ、ステーキサンド… |
-| F3 | 高橋鳥肉店 | `assets/vendors/takahashi-toriniku.webp` | 焼きとり、もも串… |
-| F4 | 味な菓子処 しまの | `assets/vendors/shimano-kashi.webp` | 下田さく咲く、みたらしだんご… |
+| store_id | name | image_url (F) |
+|----------|------|---------------|
+| `food_makimaki` | 伊豆下田食堂まきまき | `assets/vendors/makimaki.webp` |
+| `food_12kitchen` | 12 KITCHEN SHIMODA | `assets/vendors/12kitchen-shimoda.webp` |
+| `food_takahashi_toriniku` | 高橋鳥肉店 | `assets/vendors/takahashi-toriniku.webp` |
+| `food_shimano` | 味な菓子処 しまの | `assets/vendors/shimano-kashi.webp` |
 
 `category` はシードで `フードエリア`（フライヤー見出しに合わせた）。変更可。
 
@@ -123,17 +123,25 @@ gviz の `row.c[列番号]` です。**A 列 = 0** ではなく、本プロジ�
 
 ---
 
-## 確認したいこと（回答をもらってからデータ・設定を埋めます）
+## 確認したいこと
 
-1. **「WS」は屋内ワークショップ**の理解で合っていますか？ 2 箇所の正式名称は？
-2. **飲食 4 店**の店名・`store_id`（LINE 用）・カテゴリ表示名は？
-3. **トイレ 3 箇所**の呼び方（例: 東／西／メイン）は？ モーダルに載せる文言は必要ですか？
-4. **ステージ**の名称。プログラム画像は **1 枚固定**か、**複数（F/G/H）**か、**当日差し替え**か？
-5. **キッズエリア**のピン画像・紹介画像は誰が用意しますか？（ファイル名の希望があれば）
-6. **スプレッドシート**は外浦と同一ブックにシート追加か、敷根専用ブックか？
-7. **LINE / GAS**は外浦をコピー新規か、ゼロからか？
-8. **総合運動公園**のイラスト地図と四隅座標の入手予定は？
-9. レイヤーパネル「設備・スポット」を来場者がオフにできる現仕様でよいか？（トイレを常に見せたい場合は将来 UI 変更の検討）
+### 飲食 4 店 — 回答済み
+
+- 店名「味な菓子処 しまの」: フライヤーどおり
+- 座標: 後日入稿
+- `store_id`: `food_makimaki` / `food_12kitchen` / `food_takahashi_toriniku` / `food_shimano`
+- フライヤー下部の変更注記: アプリ非表示
+
+### 未回答
+
+1. **「WS」は屋内ワークショップ**で合っていますか？ 2 箇所の正式名称は？
+2. **トイレ 3 箇所**の呼び方は？ モーダルに説明は必要ですか？
+3. **ステージ**のピン表示名。第2部 3 団体の開始時刻は？
+4. **キッズエリア**のピン画像・紹介画像の用意
+5. **スプレッドシート**は敷根専用ブックか、外浦と同一ブックか
+6. **LINE / GAS**は外浦コピーか新規か
+7. **総合運動公園**イラストと四隅座標の入手
+8. レイヤー「設備・スポット」をオフ不可にする要否
 
 ---
 

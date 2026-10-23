@@ -1,7 +1,15 @@
 # 敷根公園フェス — フードエリア出店者（フライヤー読取）
 
-出典: 運営提供フライヤー「敷根公園フェス フードエリア」（`web/assets/vendors/flyer-food-area-2026.jpg`）。  
-**座標（lat/lng）・store_id（LINE 用）はフライヤーに無いため未記入。** 地図配置後にシートへ追加してください。
+出典: 運営提供フライヤー「敷根公園フェス フードエリア」（`web/assets/vendors/flyer-food-area-2026.jpg`）。
+
+**運営確認済み（2026-10）**
+
+| 項目 | 内容 |
+|------|------|
+| 店名「味な菓子処 しまの」 | フライヤー表記のまま |
+| 座標 lat/lng | **後日入稿**（シードは空欄） |
+| フライヤー下部の変更注記 | **アプリには表示しない** |
+| LINE `store_id` | 下表（`posts.store_id` と一致させる） |
 
 ---
 
@@ -13,58 +21,32 @@
 | 日時 | 2026年11月3日（火・祝）10:00〜16:00 |
 | 入場 | 無料 |
 | 問い合わせ | 下田市敷根公園屋内温水プール TEL 0558-23-6333 |
-| 注記 | 出店者情報は予告なく変更になる場合があります |
 
 ---
 
-## 出店 4 店（読取テキスト）
+## 出店 4 店
 
-### 1. 伊豆下田食堂まきまき
+| store_id | name | メニュー（要約） | 画像 |
+|----------|------|------------------|------|
+| `food_makimaki` | 伊豆下田食堂まきまき | 肉巻きおにぎり、焼きそば、たこ焼き、フライドチキン…ほか | `assets/vendors/makimaki.webp` |
+| `food_12kitchen` | 12 KITCHEN SHIMODA | ホットドッグ、ステーキサンド、ポテト、タピオカドリンク…ほか | `assets/vendors/12kitchen-shimoda.webp` |
+| `food_takahashi_toriniku` | 高橋鳥肉店 | 焼きとり、もも串、かわ串、つくね、チキンテール…ほか | `assets/vendors/takahashi-toriniku.webp` |
+| `food_shimano` | 味な菓子処 しまの | 下田さく咲く、みたらしだんご、まいたけおこわ | `assets/vendors/shimano-kashi.webp` |
 
-- **メニュー（フライヤー記載）:** 肉巻きおにぎり、焼きそば、たこ焼き、フライドチキン…ほか
-- **マップ用画像:** `assets/vendors/makimaki.webp`（フライヤー左ロゴを切り出し）
-
-### 2. 12 KITCHEN SHIMODA
-
-- **メニュー:** ホットドッグ、ステーキサンド、ポテト、タピオカドリンク…ほか
-- **マップ用画像:** `assets/vendors/12kitchen-shimoda.webp`
-
-### 3. 高橋鳥肉店
-
-- **メニュー:** 焼きとり、もも串、かわ串、つくね、チキンテール…ほか
-- **マップ用画像:** `assets/vendors/takahashi-toriniku.webp`
-
-### 4. 味な菓子処 しまの
-
-- **メニュー:** 下田さく咲く、みたらしだんご、まいたけおこわ
-- **マップ用画像:** `assets/vendors/shimano-kashi.webp`  
-  （フライヤー表記は「味な菓子処」「しまの」の 2 行。正式な店名表記に修正があればシートの `name` を差し替え）
+`store_id` は `food_` プレフィックスで固定施設 ID と衝突しないようにしています。
 
 ---
 
 ## スプレッドシートへの入稿
 
 1. [sheets/店舗マスタ_ヘッダー.csv](sheets/店舗マスタ_ヘッダー.csv) を 1 行目に貼る
-2. [sheets/food_vendors_seed.csv](sheets/food_vendors_seed.csv) の 2〜5 行を貼る（**lat/lng は空**）
-3. 列 F（`image_url`）に `assets/vendors/….webp` を入れている → GitHub Pages 同梱画像をそのまま表示（`index.html` の `resolveSheetMediaUrl`）
+2. [sheets/food_vendors_seed.csv](sheets/food_vendors_seed.csv) を 2〜5 行に貼る
+3. 列 F は `assets/vendors/….webp`（GitHub Pages 同梱）
 
-本番 URL 例（デプロイ後）:  
-`https://stand-koike.github.io/shikine-map/assets/vendors/makimaki.webp`  
-シートには **相対パス `assets/...` 推奨**（環境をまたいで同じ行が使える）。
+ディープリンク例: `?spot=food_makimaki`
 
 ---
 
-## store_id（LINE かわら版）
+## LINE かわら版
 
-4 店とも **store_id は未設定**。LINE 運用開始時に店ごとに一意 ID を決め、[PIN_INVENTORY_SHIKINE.md](PIN_INVENTORY_SHIKINE.md) と `posts.store_id` を揃えてください。
-
----
-
-## 画像ファイル一覧
-
-| ファイル | 用途 |
-|----------|------|
-| `flyer-food-area-2026.jpg` | 元フライヤー（参照用） |
-| `*.webp` / `*.jpg` | 各店ロゴ（マーカー・モーダル） |
-
-切り出し位置の再現手順は `web/assets/vendors/README.md`（必要なら Agent が追記）。
+[LINE_KAWARA_SHIKINE.md](LINE_KAWARA_SHIKINE.md) — 有効化後、上記 `store_id` を `posts` シートに使用。

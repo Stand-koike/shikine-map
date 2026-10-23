@@ -1,5 +1,5 @@
 _reserved,name,lat,lng,emoji,image_url,image_url_2,image_url_3,desc,category,hidden,store_id,reserved,status,news,link_url,coupon,address,phone,tags,hours,name_en,desc_en,cat_en,status_en,news_en,link_url_en,coupon_en,address_en,phone_en,tags_en,hours_en,tagline,tagline_en
-,伊豆下田食堂まきまき,,,,assets/vendors/makimaki.webp,,,肉巻きおにぎり、焼きそば、たこ焼き、フライドチキン…ほか,フードエリア,,,,,,,,,,,,,,,,,,,,,
-,12 KITCHEN SHIMODA,,,,assets/vendors/12kitchen-shimoda.webp,,,ホットドッグ、ステーキサンド、ポテト、タピオカドリンク…ほか,フードエリア,,,,,,,,,,,,,,,,,,,,,
-,高橋鳥肉店,,,,assets/vendors/takahashi-toriniku.webp,,,焼きとり、もも串、かわ串、つくね、チキンテール…ほか,フードエリア,,,,,,,,,,,,,,,,,,,,,
-,味な菓子処 しまの,,,,assets/vendors/shimano-kashi.webp,,,下田さく咲く、みたらしだんご、まいたけおこわ,フードエリア,,,,,,,,,,,,,,,,,,,,,
+,伊豆下田食堂まきまき,,,,assets/vendors/makimaki.webp,,,肉巻きおにぎり、焼きそば、たこ焼き、フライドチキン…ほか,フードエリア,,food_makimaki,,,,,,,,,,,,,,,,,,,
+,12 KITCHEN SHIMODA,,,,assets/vendors/12kitchen-shimoda.webp,,,ホットドッグ、ステーキサンド、ポテト、タピオカドリンク…ほか,フードエリア,,food_12kitchen,,,,,,,,,,,,,,,,,,,
+,高橋鳥肉店,,,,assets/vendors/takahashi-toriniku.webp,,,焼きとり、もも串、かわ串、つくね、チキンテール…ほか,フードエリア,,food_takahashi_toriniku,,,,,,,,,,,,,,,,,,,
+,味な菓子処 しまの,,,,assets/vendors/shimano-kashi.webp,,,下田さく咲く、みたらしだんご、まいたけおこわ,フードエリア,,food_shimano,,,,,,,,,,,,,,,,,,,

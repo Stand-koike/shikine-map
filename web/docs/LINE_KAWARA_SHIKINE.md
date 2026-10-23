@@ -48,6 +48,15 @@
 
 ピン座標は店舗マスタの lat/lng のまま（LINE で座標は変えない想定）。座標も変える運用なら posts の lat/lng を使うフォールバックあり。
 
+### 敷根フード 4 店の store_id（運営確認済み）
+
+| store_id | 店名 |
+|----------|------|
+| `food_makimaki` | 伊豆下田食堂まきまき |
+| `food_12kitchen` | 12 KITCHEN SHIMODA |
+| `food_takahashi_toriniku` | 高橋鳥肉店 |
+| `food_shimano` | 味な菓子処 しまの |
+
 ---
 
 ## まだやらないこと（明示）
