@@ -201,6 +201,7 @@
         @media (max-width: 767px) {
             .bottom-tab-home { display: flex; }
         }
+        .bottom-tab-timetable { display: flex; }
 
         /* ドロップダウンパネル共通 */
         .ctrl-panel-wrapper { position: relative; }
@@ -985,6 +986,21 @@
             align-items: center; border-radius: 20px 20px 0 0; flex-shrink: 0;
         }
         .news-list-body { overflow-y: auto; flex: 1; }
+        .timetable-item {
+            padding: 12px 14px; border-bottom: 1px solid #eee;
+            display: flex; gap: 12px; align-items: flex-start;
+        }
+        .timetable-time {
+            flex: 0 0 72px; font-size: 13px; font-weight: bold;
+            color: var(--color-primary); line-height: 1.35;
+        }
+        .timetable-main { flex: 1; min-width: 0; }
+        .timetable-title { font-weight: bold; font-size: 14px; margin-bottom: 2px; }
+        .timetable-performer { font-size: 14px; color: #333; }
+        .timetable-desc { font-size: 12px; color: #666; margin-top: 4px; line-height: 1.45; }
+        .timetable-venue {
+            font-size: 11px; color: #888; margin-top: 4px;
+        }
         .news-list-close {
             background: rgba(0,0,0,0.1); color: white; border: none; border-radius: 50%;
             width: 32px; height: 32px; cursor: pointer; font-size: 16px;
@@ -1462,6 +1478,11 @@
         <i class="fas fa-map"></i> <span id="home-btn-text">マップ</span>
     </button>
 
+    <button class="ctrl-btn bottom-tab-timetable" id="tab-timetable" type="button"
+        onclick="UIModule.openTimetable()" aria-label="タイムテーブル">
+        <i class="fas fa-calendar-alt"></i> <span id="timetable-btn-text">タイムテーブル</span>
+    </button>
+
     <!-- カテゴリフィルター -->
     <div class="ctrl-panel-wrapper">
         <button class="ctrl-btn primary" id="tab-filter" onclick="UIModule.onTabTap('filter')">
@@ -1549,6 +1570,19 @@
 <!-- ============================================================
      MODALS
      ============================================================ -->
+
+<!-- タイムテーブル -->
+<div class="modal-overlay" id="timetable-overlay" onclick="UIModule.closeTimetable(event)">
+    <div class="news-list-card" onclick="event.stopPropagation()">
+        <div class="news-list-header">
+            <span id="timetable-title">タイムテーブル</span>
+            <button class="news-list-close" type="button" onclick="UIModule.closeTimetable(null, true)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="news-list-body" id="timetable-content"></div>
+    </div>
+</div>
 
 <!-- ニュース一覧モーダル -->
 <div class="modal-overlay" id="news-list-overlay" onclick="UIModule.closeNewsList(event)">
@@ -1732,7 +1766,10 @@ const State = {
     fixedSpots:            [],
     fixedMarkers:          [],
     lastFixedDataHash:     '',
-    fixedPollInterval:     null
+    fixedPollInterval:     null,
+    scheduleItems:         [],
+    lastScheduleHash:      '',
+    schedulePollInterval:  null
 };
 
 // ================================================================
@@ -2214,6 +2251,112 @@ const FixedModule = {
 window._gvizFixedCb = function(json) {
     clearTimeout(FixedModule._fetchTimeout);
     FixedModule.onLoaded(json);
+};
+
+// ================================================================
+// ScheduleModule — フェス全体タイムテーブル（event_schedule シート）
+// ================================================================
+const ScheduleModule = {
+
+    _fetchTimeout: null,
+
+    fetch() {
+        const sheetName = CONFIG.EVENTS_SHEET;
+        if (!sheetName || !CONFIG.SHEET_ID) return;
+
+        const cbName = '_gvizScheduleCb';
+        const oldScript = document.getElementById('gviz-schedule-script');
+        if (oldScript) oldScript.remove();
+
+        clearTimeout(this._fetchTimeout);
+        this._fetchTimeout = setTimeout(() => {
+            console.warn('[ScheduleModule] タイムアウト');
+        }, 12000);
+
+        const sheetParam = encodeURIComponent(sheetName);
+        const script = document.createElement('script');
+        script.id = 'gviz-schedule-script';
+        script.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=responseHandler:${cbName}&sheet=${sheetParam}&_=${Date.now()}`;
+        script.onerror = () => {
+            clearTimeout(this._fetchTimeout);
+            console.warn('[ScheduleModule] スケジュールシート取得失敗');
+        };
+        document.body.appendChild(script);
+    },
+
+    onLoaded(json) {
+        clearTimeout(this._fetchTimeout);
+        const items = this._parse(json);
+        const hash = JSON.stringify(items);
+        if (hash === State.lastScheduleHash) return;
+        State.lastScheduleHash = hash;
+        State.scheduleItems = items;
+        if (document.getElementById('timetable-overlay')?.classList.contains('open')) {
+            UIModule._renderTimetable();
+        }
+    },
+
+    _parse(json) {
+        const COL = CONFIG.EVENT_SCHEDULE_COLS || {};
+        const cell = (row, key) => {
+            const idx = COL[key];
+            if (idx == null) return '';
+            const v = row.c[idx]?.v;
+            return v != null ? String(v).trim() : '';
+        };
+        if (!json?.table?.rows) return [];
+
+        const items = json.table.rows.reduce((acc, row) => {
+            if (!row?.c) return acc;
+            if (row.c[COL.HIDDEN]?.v === false || row.c[COL.HIDDEN]?.v === 'FALSE') return acc;
+
+            const title = cell(row, 'TITLE');
+            const performer = cell(row, 'PERFORMER');
+            const description = cell(row, 'DESCRIPTION');
+            const venue = cell(row, 'VENUE');
+            const eventDate = cell(row, 'EVENT_DATE');
+            const startTime = cell(row, 'START_TIME');
+            const endTime = cell(row, 'END_TIME');
+            const sortRaw = cell(row, 'SORT_ORDER');
+            const sortOrder = sortRaw !== '' && Number.isFinite(Number(sortRaw)) ? Number(sortRaw) : 9999;
+            const imageUrl = resolveSheetMediaUrl(cell(row, 'IMAGE_URL'));
+
+            if (!title && !performer && !description && !startTime) return acc;
+
+            acc.push({
+                startTime, endTime, title, performer, description, venue,
+                eventDate, sortOrder, imageUrl
+            });
+            return acc;
+        }, []);
+
+        items.sort((a, b) => {
+            const d = String(a.eventDate || '').localeCompare(String(b.eventDate || ''));
+            if (d) return d;
+            if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+            return ScheduleModule._timeToMinutes(a.startTime) - ScheduleModule._timeToMinutes(b.startTime);
+        });
+        return items;
+    },
+
+    _timeToMinutes(t) {
+        if (!t) return 9999;
+        const m = String(t).trim().match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return 9999;
+        return Number(m[1]) * 60 + Number(m[2]);
+    },
+
+    startPolling() {
+        const ms = CONFIG.EVENT_SCHEDULE_POLL_INTERVAL;
+        if (!ms || !CONFIG.EVENTS_SHEET) return;
+        clearInterval(State.schedulePollInterval);
+        State.schedulePollInterval = setInterval(() => ScheduleModule.fetch(), ms);
+    }
+};
+
+window._gvizScheduleCb = function(json) {
+    clearTimeout(ScheduleModule._fetchTimeout);
+    ScheduleModule.onLoaded(json);
 };
 
 // ================================================================
@@ -3090,6 +3233,8 @@ const MapModule = {
             DataModule.startPolling();
             FixedModule.fetch();
             FixedModule.startPolling();
+            ScheduleModule.fetch();
+            ScheduleModule.startPolling();
             this._startGPS();
 
             Promise.resolve(this._addIllustrationMap())
@@ -4188,6 +4333,66 @@ const UIModule = {
             document.getElementById('news-list-overlay').classList.remove('open');
     },
 
+    // ---- タイムテーブル ----
+
+    openTimetable() {
+        document.getElementById('timetable-title').innerText = t('timetableTitle');
+        const ttBtn = document.getElementById('timetable-btn-text');
+        if (ttBtn) ttBtn.innerText = t('timetableTitle');
+        this._renderTimetable();
+        document.getElementById('timetable-overlay').classList.add('open');
+        if (!State.scheduleItems.length) ScheduleModule.fetch();
+    },
+
+    closeTimetable(e, force) {
+        if (force || e?.target?.id === 'timetable-overlay')
+            document.getElementById('timetable-overlay').classList.remove('open');
+    },
+
+    _formatTimetableTime(item) {
+        const s = item.startTime || '';
+        const e = item.endTime || '';
+        if (s && e) return `${s}–${e}`;
+        if (s) return `${s}〜`;
+        return '—';
+    },
+
+    _renderTimetable() {
+        const body = document.getElementById('timetable-content');
+        if (!body) return;
+        body.innerHTML = '';
+        const items = State.scheduleItems || [];
+        if (!items.length) {
+            body.innerHTML = `<p style="padding:16px;color:#888;text-align:center;">${escapeHtml(t('timetableEmpty'))}</p>`;
+            return;
+        }
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'timetable-item';
+            const headLine = [item.title, item.performer].filter(Boolean).join(' — ');
+            const showTitle = item.title && item.performer ? item.title : '';
+            const showPerformer = item.performer || (!item.title ? '' : '');
+            const titleHtml = showTitle
+                ? `<div class="timetable-title">${escapeHtml(showTitle)}</div>`
+                : '';
+            const performerHtml = (item.performer && showTitle)
+                ? `<div class="timetable-performer">${escapeHtml(item.performer)}</div>`
+                : (headLine && !showTitle)
+                    ? `<div class="timetable-performer">${escapeHtml(headLine)}</div>`
+                    : '';
+            const descHtml = item.description
+                ? `<div class="timetable-desc">${escapeHtml(item.description)}</div>` : '';
+            const venueHtml = item.venue
+                ? `<div class="timetable-venue">${escapeHtml(t('timetableVenue'))}: ${escapeHtml(item.venue)}</div>` : '';
+            div.innerHTML = `
+                <div class="timetable-time">${escapeHtml(this._formatTimetableTime(item))}</div>
+                <div class="timetable-main">
+                    ${titleHtml}${performerHtml}${descHtml}${venueHtml}
+                </div>`;
+            body.appendChild(div);
+        });
+    },
+
     // ---- 詳細モーダル ----
 
     openModal(spotId) {
@@ -4612,6 +4817,8 @@ const App = {
         document.getElementById('layer-btn-text').innerText  = t('layers');
         const homeText = document.getElementById('home-btn-text');
         if (homeText) homeText.innerText = t('map');
+        const ttText = document.getElementById('timetable-btn-text');
+        if (ttText) ttText.innerText = t('timetableTitle');
 
         UIModule.generateFilters(State.allSpots);
         UIModule.renderLayerPanel();

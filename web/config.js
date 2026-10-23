@@ -96,6 +96,14 @@
         ENABLE_LIVE_POSTS: false,
         LIVE_POST_POLL_INTERVAL: 0,
 
+        /** フェス全体タイムテーブル @see web/docs/EVENT_SCHEDULE_SHIKINE.md */
+        EVENTS_SHEET: secrets.EVENTS_SHEET || 'event_schedule',
+        EVENT_SCHEDULE_POLL_INTERVAL: 60000,
+        EVENT_SCHEDULE_COLS: {
+            START_TIME: 1, END_TIME: 2, TITLE: 3, PERFORMER: 4, DESCRIPTION: 5,
+            VENUE: 6, EVENT_DATE: 7, SORT_ORDER: 8, HIDDEN: 9, IMAGE_URL: 10
+        },
+
         CLUSTER: {
             enabled:          true,
             clusterMaxZoom:   17,
@@ -110,14 +118,18 @@
                 loading: '読み込み中...', noData: 'データなし', filter: '絞り込み',
                 layers: 'レイヤー', newsListTitle: 'お知らせ', updating: 'データ更新中...',
                 hours: '営業時間', tags: 'タグ', allTags: 'すべてのタグ', map: 'マップ',
-                urlLink: 'リンク', descLabel: '説明', newsLabel: '補足'
+                urlLink: 'リンク', descLabel: '説明', newsLabel: '補足',
+                timetableTitle: 'タイムテーブル', timetableEmpty: 'スケジュールは準備中です',
+                timetableVenue: '会場'
             },
             en: {
                 all: 'All', go: 'Open in Google Maps', coupon: 'Coupon',
                 loading: 'Loading...', noData: 'No Data', filter: 'Filter',
                 layers: 'Layers', newsListTitle: 'News', updating: 'Updating...',
                 hours: 'Hours', tags: 'Tags', allTags: 'All Tags', map: 'Map',
-                urlLink: 'Link', descLabel: 'About', newsLabel: 'Notes'
+                urlLink: 'Link', descLabel: 'About', newsLabel: 'Notes',
+                timetableTitle: 'Timetable', timetableEmpty: 'Schedule coming soon',
+                timetableVenue: 'Venue'
             }
         }
     };
