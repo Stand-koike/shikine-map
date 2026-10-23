@@ -101,11 +101,32 @@
         EVENT_SCHEDULE_POLL_INTERVAL: 60000,
         EVENT_SCHEDULE_COLS: {
             START_TIME: 1, END_TIME: 2, TITLE: 3, PERFORMER: 4, DESCRIPTION: 5,
-            VENUE: 6, EVENT_DATE: 7, SORT_ORDER: 8, HIDDEN: 9, IMAGE_URL: 10
+            VENUE: 6, EVENT_DATE: 7, SORT_ORDER: 8, HIDDEN: 9, IMAGE_URL: 10,
+            STORE_ID: 11
+        },
+
+        /** 探す: シート category → 表示名。ピンは非表示にせず強調だけ */
+        FIND_GROUPS: [
+            { category: 'フードエリア', label: '飲食' },
+            { category: 'toilet', label: 'トイレ' },
+            { category: 'stage', label: 'ステージ' },
+            { category: 'kids_play', label: 'キッズ' },
+            { category: 'ws_indoor', label: 'ワークショップ' },
+            { category: 'pool', label: 'プール' },
+            { category: 'park_office', label: '事務所' }
+        ],
+
+        PARK_INFO: {
+            title: '敷根公園フェス 2026',
+            date: '2026年11月3日（火・祝）',
+            hours: '主な時間 10:00〜16:00（自然観察は 9:30〜）',
+            note: '入場無料',
+            contact: '下田市敷根公園屋内温水プール',
+            phone: '0558-23-6333'
         },
 
         CLUSTER: {
-            enabled:          true,
+            enabled:          false,
             clusterMaxZoom:   17,
             clusterRadius:    55,
             clusterMinPoints: 2,
@@ -115,25 +136,29 @@
         TRANSLATIONS: {
             ja: {
                 all: 'すべて', go: 'Google Mapsで見る', coupon: 'クーポンを使う',
-                loading: '読み込み中...', noData: 'データなし', filter: '絞り込み',
+                loading: '読み込み中...', noData: 'データなし', filter: '探す',
                 layers: 'レイヤー', newsListTitle: 'お知らせ', updating: 'データ更新中...',
                 hours: '営業時間', tags: 'タグ', allTags: 'すべてのタグ', map: 'マップ',
                 urlLink: 'リンク', descLabel: '説明', newsLabel: '補足',
                 timetableTitle: 'タイムテーブル', timetableEmpty: 'スケジュールは準備中です',
                 timetableVenue: '会場',
                 applyLink: '参加申込はこちら',
-                supportedBy: 'Supported by'
+                supportedBy: 'Supported by',
+                parkTitle: '公園',
+                findHint: 'ピンは消さず、対象を大きく表示します'
             },
             en: {
                 all: 'All', go: 'Open in Google Maps', coupon: 'Coupon',
-                loading: 'Loading...', noData: 'No Data', filter: 'Filter',
+                loading: 'Loading...', noData: 'No Data', filter: 'Find',
                 layers: 'Layers', newsListTitle: 'News', updating: 'Updating...',
                 hours: 'Hours', tags: 'Tags', allTags: 'All Tags', map: 'Map',
                 urlLink: 'Link', descLabel: 'About', newsLabel: 'Notes',
                 timetableTitle: 'Timetable', timetableEmpty: 'Schedule coming soon',
                 timetableVenue: 'Venue',
                 applyLink: 'Register here',
-                supportedBy: 'Supported by'
+                supportedBy: 'Supported by',
+                parkTitle: 'Park',
+                findHint: 'Pins stay visible; matches are larger'
             }
         }
     };

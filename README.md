@@ -20,6 +20,7 @@ LINE かわら版・WordPress 連携は **使いません**（設定で無効化
 
 | 項目 | 手順 |
 |------|------|
+| **いまの整理（位置後入れ用）** | [web/docs/DATA_STATUS_SHIKINE.md](web/docs/DATA_STATUS_SHIKINE.md) |
 | ピン一覧・データ項目 | [web/docs/PIN_INVENTORY_SHIKINE.md](web/docs/PIN_INVENTORY_SHIKINE.md) |
 | フード出店 4 店 | [web/docs/FOOD_VENDORS_SHIKINE.md](web/docs/FOOD_VENDORS_SHIKINE.md) |
 | タイムテーブル | [web/docs/EVENT_SCHEDULE_SHIKINE.md](web/docs/EVENT_SCHEDULE_SHIKINE.md) |

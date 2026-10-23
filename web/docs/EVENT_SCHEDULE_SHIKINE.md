@@ -23,6 +23,7 @@
 | I | sort_order | 同日の並び順（数値小さいほど上） |
 | J | hidden | `FALSE` で非表示（店舗マスタ同型） |
 | K | image_url | 任意（`assets/...` または HTTPS） |
+| L | store_id | 対応ピン。リストタップで地図へ寄る |
 
 ヘッダー CSV: [sheets/event_schedule_ヘッダー.csv](sheets/event_schedule_ヘッダー.csv)  
 **2026/11/3 分の初期データ:** [sheets/event_schedule_2026-11-03_seed.csv](sheets/event_schedule_2026-11-03_seed.csv)
