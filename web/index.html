@@ -1001,6 +1001,20 @@
         .timetable-venue {
             font-size: 11px; color: #888; margin-top: 4px;
         }
+        .modal-sponsor {
+            display: none; align-items: center; gap: 12px;
+            margin: 10px 0 14px; padding: 10px 12px;
+            background: #fafafa; border-radius: 12px; border: 1px solid #eee;
+        }
+        .modal-sponsor-label {
+            font-size: 11px; color: #888; text-transform: uppercase;
+            letter-spacing: 0.04em; margin-bottom: 2px;
+        }
+        .modal-sponsor-name { font-size: 14px; font-weight: bold; color: #333; }
+        .modal-sponsor-logo {
+            width: 56px; height: 56px; object-fit: contain; flex-shrink: 0;
+            border-radius: 50%;
+        }
         .news-list-close {
             background: rgba(0,0,0,0.1); color: white; border: none; border-radius: 50%;
             width: 32px; height: 32px; cursor: pointer; font-size: 16px;
@@ -1626,6 +1640,13 @@
                 <span id="modal-hours"></span>
             </div>
             <div class="modal-tags" id="modal-tags"></div>
+            <div class="modal-sponsor" id="modal-sponsor-wrap" aria-label="協力">
+                <img class="modal-sponsor-logo" id="modal-sponsor-logo" src="" alt="">
+                <div>
+                    <div class="modal-sponsor-label" id="modal-sponsor-label">Supported by</div>
+                    <div class="modal-sponsor-name" id="modal-sponsor-name"></div>
+                </div>
+            </div>
             <div class="modal-contact" id="modal-contact" style="display:none;">
                 <p class="modal-contact-line" id="modal-address-wrap" style="display:none;">
                     <i class="fas fa-map-marker-alt"></i>
@@ -4394,11 +4415,40 @@ const UIModule = {
         if (!spot) return;
         State.currentSpot = spot;
 
-        const images = [spot.imageUrl, spot.imageUrl2, spot.imageUrl3].filter(Boolean);
+        const catRaw = spot.category != null ? String(spot.category).trim() : '';
+        const isKidsPlay = catRaw === 'kids_play';
+        let images = [spot.imageUrl, spot.imageUrl2, spot.imageUrl3].filter(Boolean);
+        if (isKidsPlay) images = [spot.imageUrl].filter(Boolean);
         UIModule._buildSlider(images, spot.emoji);
 
         document.getElementById('modal-cat').innerText   = val(spot, 'category');
         document.getElementById('modal-title').innerText = val(spot, 'name');
+
+        const sponsorWrap = document.getElementById('modal-sponsor-wrap');
+        const sponsorLogoEl = document.getElementById('modal-sponsor-logo');
+        const sponsorNameEl = document.getElementById('modal-sponsor-name');
+        const sponsorLabelEl = document.getElementById('modal-sponsor-label');
+        const sponsorName = isKidsPlay ? (spot.tagline || '').trim() : '';
+        const sponsorLogo = isKidsPlay && spot.imageUrl3 ? spot.imageUrl3 : '';
+        if (sponsorWrap && sponsorLogoEl && sponsorNameEl) {
+            if (isKidsPlay && (sponsorName || sponsorLogo)) {
+                sponsorWrap.style.display = 'flex';
+                if (sponsorLabelEl) sponsorLabelEl.textContent = t('supportedBy');
+                sponsorNameEl.textContent = sponsorName;
+                if (sponsorLogo) {
+                    sponsorLogoEl.src = sponsorLogo;
+                    sponsorLogoEl.alt = sponsorName || t('supportedBy');
+                    sponsorLogoEl.style.display = 'block';
+                } else {
+                    sponsorLogoEl.removeAttribute('src');
+                    sponsorLogoEl.style.display = 'none';
+                }
+            } else {
+                sponsorWrap.style.display = 'none';
+                sponsorLogoEl.removeAttribute('src');
+                sponsorNameEl.textContent = '';
+            }
+        }
 
         // ステータス
         const statusText = getSpotStatusText(spot);

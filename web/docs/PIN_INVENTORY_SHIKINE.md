@@ -20,7 +20,7 @@
 | T | トイレ | **3** | 固定マスタ | トイレ PNG（常時） | （要確認: 説明のみ / 画像なしでよいか） |
 | F | 飲食 | **4** | 店舗マスタ | 従来どおり（絵文字 or 店舗画像 URL） | 店舗情報 + **LINE 更新**（かわら版） |
 | S | 敷根公園野外ステージ | **1** | 固定マスタ | ステージ用 PNG（**未決**） | 青空ヨガ + 音楽 TT 画像スライダー — [OUTDOOR_STAGE_SHIKINE.md](OUTDOOR_STAGE_SHIKINE.md) |
-| K | 子供プレイエリア | **1** | 固定マスタ | **専用ピン画像**（常時） | **アクティビティ紹介画像** |
+| K | わくわく広場（キッズ） | **1** | 固定マスタ | 専用ピン PNG（**未決**） | フライヤー画像 + **Supported by 下田Baby&Kids** — [KIDS_SPACE_SHIKINE.md](KIDS_SPACE_SHIKINE.md) |
 | W | 屋内ワークショップ | **2** | 固定マスタ | WS 用 PNG（要デザイン） | **紹介画像** + **desc** + **`link_url` 申込リンク** — 1件目 [WORKSHOPS_SHIKINE.md](WORKSHOPS_SHIKINE.md) |
 
 **合計: 店舗 4 + 固定 7 = 11 ピン**

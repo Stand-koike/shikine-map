@@ -121,7 +121,8 @@
                 urlLink: 'リンク', descLabel: '説明', newsLabel: '補足',
                 timetableTitle: 'タイムテーブル', timetableEmpty: 'スケジュールは準備中です',
                 timetableVenue: '会場',
-                applyLink: '参加申込はこちら'
+                applyLink: '参加申込はこちら',
+                supportedBy: 'Supported by'
             },
             en: {
                 all: 'All', go: 'Open in Google Maps', coupon: 'Coupon',
@@ -131,7 +132,8 @@
                 urlLink: 'Link', descLabel: 'About', newsLabel: 'Notes',
                 timetableTitle: 'Timetable', timetableEmpty: 'Schedule coming soon',
                 timetableVenue: 'Venue',
-                applyLink: 'Register here'
+                applyLink: 'Register here',
+                supportedBy: 'Supported by'
             }
         }
     };
