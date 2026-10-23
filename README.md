@@ -26,6 +26,7 @@ LINE かわら版・WordPress 連携は **使いません**（設定で無効化
 | 屋内ワークショップ | [web/docs/WORKSHOPS_SHIKINE.md](web/docs/WORKSHOPS_SHIKINE.md) |
 | 屋外ステージ | [web/docs/OUTDOOR_STAGE_SHIKINE.md](web/docs/OUTDOOR_STAGE_SHIKINE.md) |
 | キッズスペース | [web/docs/KIDS_SPACE_SHIKINE.md](web/docs/KIDS_SPACE_SHIKINE.md) |
+| プール無料開放 | [web/docs/POOL_SHIKINE.md](web/docs/POOL_SHIKINE.md) |
 | スプレッドシート | [web/docs/SHEET_SETUP_SHIKINE.md](web/docs/SHEET_SETUP_SHIKINE.md) |
 | イラスト地図 | `web/map.webp` に差し替え、`config.js` の `MAP_IMAGE.coordinates` を更新 |
 | 本番公開 | GitHub Secrets（Mapbox・シート ID）→ Pages |
