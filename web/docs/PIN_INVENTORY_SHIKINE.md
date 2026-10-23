@@ -19,7 +19,7 @@
 |---|------|------|----------|----------------|------------------------|
 | T | トイレ | **3** | 固定マスタ | トイレ PNG（常時） | （要確認: 説明のみ / 画像なしでよいか） |
 | F | 飲食 | **4** | 店舗マスタ | 従来どおり（絵文字 or 店舗画像 URL） | 店舗情報 + **LINE 更新**（かわら版） |
-| S | パフォーマンスステージ | **1** | 固定マスタ | ダンス・音楽が分かる PNG（常時・**未決**） | **タイムテーブル画像**（`assets/stage/shikine-music-stage-timetable.webp`）＋一覧は [EVENT_SCHEDULE_SHIKINE.md](EVENT_SCHEDULE_SHIKINE.md) |
+| S | 敷根公園野外ステージ | **1** | 固定マスタ | ステージ用 PNG（**未決**） | 青空ヨガ + 音楽 TT 画像スライダー — [OUTDOOR_STAGE_SHIKINE.md](OUTDOOR_STAGE_SHIKINE.md) |
 | K | 子供プレイエリア | **1** | 固定マスタ | **専用ピン画像**（常時） | **アクティビティ紹介画像** |
 | W | 屋内ワークショップ | **2** | 固定マスタ | WS 用 PNG（要デザイン） | **紹介画像** + **desc** + **`link_url` 申込リンク** — 1件目 [WORKSHOPS_SHIKINE.md](WORKSHOPS_SHIKINE.md) |
 

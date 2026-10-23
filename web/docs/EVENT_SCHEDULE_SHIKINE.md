@@ -31,14 +31,16 @@
 
 ## 屋外ステージピン（固定マスタ）
 
-| 項目 | 値（座標は未設定） |
-|------|-------------------|
-| name | SHIKINE MUSIC STAGE（フライヤー表記） |
-| category | `stage`（`FIXED_PIN_ICONS.stage` は PNG 決定後） |
-| image_url | `assets/stage/shikine-music-stage-timetable.webp` |
-| desc | 2026.11.3 TUE — 敷根公園フェス 2026 |
+詳細: [OUTDOOR_STAGE_SHIKINE.md](OUTDOOR_STAGE_SHIKINE.md)
 
-1 行シード: [sheets/fixed_master_music_stage_seed.csv](sheets/fixed_master_music_stage_seed.csv)
+| 項目 | 値 |
+|------|-----|
+| name | 敷根公園野外ステージ |
+| `store_id` | `stage_outdoor` |
+| 画像 1 | `assets/stage/aozora-yoga.webp`（青空ヨガ） |
+| 画像 2 | `assets/stage/shikine-music-stage-timetable.webp`（音楽ステージ） |
+
+シード: [sheets/fixed_master_outdoor_stage_seed.csv](sheets/fixed_master_outdoor_stage_seed.csv)
 
 ---
 
@@ -47,6 +49,7 @@
 | 行 | 出典 |
 |----|------|
 | フードエリア 10:00–16:00 | フードエリアフライヤー |
+| 青空ヨガ 10:00–11:00 | 青空ヨガフライヤー |
 | 音楽ステージ各出演 | SHIKINE MUSIC STAGE タイムテーブル画像 |
 
 WS（1件目: キッズコアトレーニング 12:15–13:00）はシードに反映済み。  
