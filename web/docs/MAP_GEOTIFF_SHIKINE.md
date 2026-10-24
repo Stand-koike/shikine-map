@@ -27,25 +27,25 @@
 
 四隅はピクセル中心ではなく **ラスタ外縁**（GDAL の範囲）。Mapbox image source は NW → NE → SE → SW、`[lng, lat]`。
 
-### 本番で使っている四隅（`park.png.points` から算出・2026-10-24）
+### 本番（2026-10-24）— QGIS GeoTIFF 一本化
 
 | 種類 | ファイル | 用途 |
 |------|----------|------|
-| GCP の地上座標 | [sheets/4point.csv](sheets/4point.csv) | QGIS の公園角マーカー（第 VIII 系→WGS84 と一致） |
-| **画像外枠四隅** | [georef/park.png.points](georef/park.png.points) → `config.js` | **Web の Mapbox イラスト**（`map.webp` のピクセル 0,0 / W,0 / W,H / 0,H） |
+| イラスト＋四隅 | `qgis/export/park_4326.tif` → `web/map.webp` | Mapbox イラスト（`gdalinfo` 四隅を `config.js`） |
+| ピン座標 | `qgis/source/point.csv` → シード CSV / `data/point_029d.geojson` | 店舗・固定マスタの lat/lng |
 
-**4point.csv をそのまま Web の四隅に入れないこと。** GCP は画像の角以外のピクセルに置かれているため、地上座標は正しくてもイラストの貼り付けがずれ、QGIS 上では一致する `point.csv` の点が Web では絵から外れます。
-
-| 角 | lng | lat |
+| 角（Mapbox: 画像 TL→TR→BR→BL） | lng | lat |
 |----|-----|-----|
-| NW（画像 0,0） | 138.9300457469 | 34.6801437740 |
-| NE（画像 W,0） | 138.9344634493 | 34.6806195482 |
-| SE（画像 W,H） | 138.9343196485 | 34.6838587709 |
-| SW（画像 0,H） | 138.9299018237 | 34.6833830982 |
+| TL | 138.9290221 | 34.6837438 |
+| TR | 138.935199 | 34.6837438 |
+| BR | 138.935199 | 34.680125 |
+| BL | 138.9290221 | 34.680125 |
 
-Georeferencer の `sourceY`（負の値）を画像行 0〜H に線形対応させてからアフィンで四隅を出す（`compute_image_corners.py`）。
+`cacheVersion`: `20261024-park4326`
 
-`cacheVersion`: `20261024-georef-file-corners`
+再書き出し時: `Import-GeoTiff.ps1` → `map-qgis.webp` を `map.webp` に上書き → 四隅を `config.js` に反映。
+
+（旧手順: `park.png.points` + 未ワープ `map.webp` は使用しない）
 
 ### 参考: pgw からの初回推定（置き換え済み）
 

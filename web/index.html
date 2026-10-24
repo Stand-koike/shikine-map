@@ -9,7 +9,7 @@
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
     <script src="line-contract.js"></script>
     <!-- 四隅変更時は ?v= を更新（GitHub Pages の config.js 長期キャッシュ対策） -->
-    <script src="config.js?v=20261024-restore-map"></script>
+    <script src="config.js?v=20261024-bearing-100"></script>
     <script src="config.local.js" onerror="void 0"></script>
     <script>
         (function () {
@@ -219,8 +219,19 @@
             transform: scale(1.18);
             z-index: 24;
         }
-        .custom-marker--fixed.marker-dim { transform: scale(0.72); }
-        .custom-marker--fixed.marker-focus { transform: scale(1.18); }
+        /* 固定ピン: ルートの transform は Mapbox が使うためスケールは内側へ */
+        .custom-marker--fixed.marker-dim,
+        .custom-marker--fixed.marker-focus {
+            transform: none;
+        }
+        .custom-marker--fixed.marker-dim .fixed-pin-visual,
+        .custom-marker--fixed.marker-dim .marker-inner {
+            transform: scale(0.72);
+        }
+        .custom-marker--fixed.marker-focus .fixed-pin-visual,
+        .custom-marker--fixed.marker-focus .marker-inner {
+            transform: scale(1.18);
+        }
         .bottom-sheet {
             position: fixed; left: 0; right: 0; bottom: 0; z-index: 210;
             background: #fff; border-radius: 16px 16px 0 0;
@@ -413,12 +424,20 @@
         /* ============================================================
            MARKERS
            ============================================================ */
-        .custom-marker {
-            width: 60px; height: 60px; cursor: pointer; z-index: 10;
+        /* 店舗ピン（固定マスタ・LIVE ピン型は別定義）— 基準サイズの 80% */
+        .custom-marker:not(.custom-marker--fixed):not(.custom-marker--live-pin) {
+            width: 48px; height: 48px; cursor: pointer; z-index: 10;
         }
         @media (max-width: 767px) {
-            .custom-marker { width: 44px; height: 44px; }
-            .marker-emoji { font-size: 20px !important; }
+            .custom-marker:not(.custom-marker--fixed):not(.custom-marker--live-pin) {
+                width: 35px; height: 35px;
+            }
+            .custom-marker:not(.custom-marker--fixed) .marker-emoji {
+                font-size: 16px !important;
+            }
+        }
+        .custom-marker:not(.custom-marker--fixed) .marker-emoji {
+            font-size: 22px;
         }
         .custom-marker.active { z-index: 100; }
         /* 固定マスタ（トイレ・駐車場等）— フロートなし・PNG ピン */
@@ -432,6 +451,13 @@
             align-items: center;
             justify-content: center;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+            transition: none;
+        }
+        .fixed-pin-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-origin: center center;
             transition: transform 0.2s ease;
         }
         .custom-marker--fixed img {
@@ -440,7 +466,44 @@
         }
         .custom-marker--fixed.active {
             z-index: 90;
+            transform: none;
+        }
+        .custom-marker--fixed.active .fixed-pin-visual {
             transform: scale(1.15);
+        }
+        .custom-marker--fixed .marker-inner {
+            animation: none !important;
+        }
+        /* 固定マスタの一部: 店舗同型の丸ピン内にロゴ（わくわく広場など） */
+        .custom-marker--fixed-circle {
+            width: 48px;
+            height: 48px;
+            filter: none;
+        }
+        @media (max-width: 767px) {
+            .custom-marker--fixed-circle {
+                width: 35px;
+                height: 35px;
+            }
+        }
+        .custom-marker--fixed-circle .marker-image--contain {
+            object-fit: contain;
+            padding: 5px;
+            box-sizing: border-box;
+            background: #fff;
+        }
+        .custom-marker--fixed-circle .marker-inner {
+            transition: transform 0.2s ease;
+        }
+        .custom-marker--fixed-circle.active {
+            transform: none;
+        }
+        .custom-marker--fixed-circle.active .marker-inner {
+            transform: scale(1.55);
+            border-color: var(--color-accent);
+            border-width: 4px;
+            box-shadow: 0 0 0 4px rgba(255, 92, 56, 0.25), 0 6px 20px rgba(0, 0, 0, 0.4);
+            animation: marker-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
         .marker-inner {
             width: 100%; height: 100%; background: #fff; border-radius: 50%;
@@ -480,11 +543,20 @@
         /* overflow: hidden は画像クリッピング用に内側の別要素で対応 */
         .marker-clip {
             position: absolute; inset: 0; border-radius: 50%; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
         }
-        .floating { animation: float-safe 3s infinite ease-in-out; }
-        @keyframes float-safe { 0%, 100% { margin-top: 0; } 50% { margin-top: -8px; } }
-        .marker-image { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 2; }
-        .marker-emoji { font-size: 28px; z-index: 1; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        /* 店舗・固定ピンは浮遊させない（LIVE ピン型のみ marker-pin--floating） */
+        .marker-image {
+            width: 100%; height: 100%;
+            object-fit: contain; object-position: center center;
+            position: absolute; inset: 0; margin: auto;
+            z-index: 2; display: block;
+            box-sizing: border-box;
+        }
+        .custom-marker--cluster .marker-image {
+            object-fit: cover;
+        }
+        .marker-emoji { z-index: 1; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .status-badge { position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; z-index: 5; display: none; }
         .marker-post-badge {
             position: absolute; top: -4px; right: -4px;
@@ -782,7 +854,10 @@
             min-height: 100px;
             position: relative; overflow: hidden; background: #f7f7f7;
         }
-        .card-thumb { width: 100%; height: 100%; object-fit: cover; }
+        .card-thumb {
+            width: 100%; height: 100%; display: block;
+            object-fit: contain; object-position: center center;
+        }
         .card-emoji-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 48px; background: var(--color-secondary); }
         /* 画像上：各フィールドの有無のみ（テキスト本文は出さない） */
         .card-image-indicators {
@@ -866,7 +941,8 @@
         }
         .kawara-modal-image {
             width: 100%; border-radius: 10px; margin-bottom: 12px;
-            max-height: 260px; object-fit: cover; display: block; cursor: pointer;
+            max-height: min(52vh, 480px); object-fit: contain; display: block; cursor: pointer;
+            background: #f5f5f5;
         }
         .kawara-modal-text {
             font-size: 14px; color: #333; line-height: 1.7;
@@ -967,8 +1043,11 @@
            IMAGE SLIDER (詳細モーダル内)
            ============================================================ */
         .modal-slider {
-            position: relative; width: 100%; aspect-ratio: 3 / 2;
-            overflow: hidden; background: #111;
+            position: relative; width: 100%;
+            height: min(52vh, 520px);
+            max-height: min(52vh, 520px);
+            flex-shrink: 0;
+            overflow: hidden; background: #f2f2f2;
             border-radius: 20px 20px 0 0;
         }
         .modal-slider-empty {
@@ -983,7 +1062,8 @@
         }
         .modal-slide-img {
             flex: 0 0 100%; width: 100%; height: 100%;
-            object-fit: cover; display: block;
+            object-fit: contain; object-position: center center;
+            display: block; background: #f2f2f2;
         }
         .slider-nav {
             position: absolute; top: 50%; transform: translateY(-50%);
@@ -1090,7 +1170,11 @@
                 max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
                 border-radius: 16px;
             }
-            .modal-slider { aspect-ratio: 3 / 2; border-radius: 16px 16px 0 0; }
+            .modal-slider {
+                height: min(48vh, 480px);
+                max-height: min(48vh, 480px);
+                border-radius: 16px 16px 0 0;
+            }
             .modal-body {
                 padding: 6px 14px 12px;
                 padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
@@ -1105,7 +1189,7 @@
             .modal-news-block { margin: 0 0 8px; padding: 8px 10px; }
             .modal-desc-text, .modal-news-text { font-size: 13px; line-height: 1.5; }
             .modal-section-label { margin-bottom: 2px; }
-            .btn-nav-large { padding: 10px; margin-bottom: 8px; font-size: 14px; }
+            .btn-instagram-large { padding: 10px; margin-bottom: 8px; font-size: 14px; }
             .btn-kawara-large { margin-bottom: 8px; padding: 10px; font-size: 14px; }
             .btn-coupon-large { padding: 10px; font-size: 15px; }
             #modal-status-wrap { margin: 2px 0 4px !important; }
@@ -1124,7 +1208,7 @@
             .modal-hours { margin: 2px 0 4px; }
             .modal-desc-block { margin: 0 0 6px; }
             .modal-news-block { margin: 0 0 6px; padding: 8px 10px; }
-            .btn-nav-large { padding: 10px; margin-bottom: 6px; }
+            .btn-instagram-large { padding: 10px; margin-bottom: 6px; }
             .btn-kawara-large { margin-bottom: 6px; padding: 10px; }
             .btn-coupon-large { padding: 10px; }
         }
@@ -1162,13 +1246,16 @@
             font-size: 14px; line-height: 1.55; color: #555; white-space: pre-wrap;
         }
         #modal-url-link { font-weight: 600; }
-        .btn-nav-large {
-            display: block; width: 100%; background: white; border: 2px solid var(--color-nav);
-            color: var(--color-nav); padding: 12px; border-radius: 12px; margin-bottom: 12px;
+        .btn-instagram-large {
+            display: none; width: 100%;
+            background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white; border: none; padding: 12px; border-radius: 12px; margin-bottom: 12px;
             font-weight: bold; font-size: 15px; cursor: pointer; text-align: center;
-            text-decoration: none; transition: all 0.2s;
+            text-decoration: none; transition: opacity 0.2s, transform 0.15s;
+            box-shadow: 0 2px 10px rgba(188, 24, 136, 0.35);
         }
-        .btn-nav-large:hover { background: var(--color-nav); color: white; }
+        .btn-instagram-large:hover { opacity: 0.92; color: white; }
+        .btn-instagram-large i { margin-right: 8px; font-size: 1.1em; }
         .btn-coupon-large {
             display: block; width: 100%; background: linear-gradient(135deg, #FF9800, #F57C00);
             color: white; border: none; padding: 12px; border-radius: 12px;
@@ -1333,8 +1420,8 @@
         }
         /* LIVE マーカー: 頭＋下向き三角形で「ピン」のように立体感を出す（APNG も頭部に載せられる） */
         .custom-marker.custom-marker--live-pin {
-            width: 64px;
-            height: 78px;
+            width: 51px;
+            height: 62px;
             justify-content: flex-end;
             align-items: center;
             display: flex;
@@ -1342,8 +1429,8 @@
         }
         @media (max-width: 767px) {
             .custom-marker.custom-marker--live-pin {
-                width: 50px;
-                height: 62px;
+                width: 40px;
+                height: 50px;
             }
         }
         .marker-pin {
@@ -1355,8 +1442,8 @@
         }
         .marker-pin > .marker-inner,
         .marker-pin > .marker-inner-livepost {
-            width: 54px;
-            height: 54px;
+            width: 43px;
+            height: 43px;
             flex-shrink: 0;
             box-sizing: border-box;
             border-radius: 50%;
@@ -1372,8 +1459,8 @@
         @media (max-width: 767px) {
             .marker-pin > .marker-inner,
             .marker-pin > .marker-inner-livepost {
-                width: 42px;
-                height: 42px;
+                width: 34px;
+                height: 34px;
             }
         }
         .marker-pin--floating {
@@ -1741,8 +1828,9 @@
                 <img class="modal-sponsor-logo" id="modal-sponsor-logo" src="" alt="">
                 <span id="modal-sponsor-name"></span>
             </div>
-            <a id="modal-nav-btn" class="btn-nav-large" target="_blank">
-                <i class="fas fa-location-arrow"></i> <span id="btn-nav-text">Google Mapsで見る</span>
+            <a id="modal-instagram-btn" class="btn-instagram-large" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-instagram" aria-hidden="true"></i>
+                <span id="btn-instagram-text">Instagram</span>
             </a>
             <button type="button" class="btn-kawara btn-kawara-large" id="modal-kawara-btn"
                 onclick="UIModule.openKawaraFromModal()">
@@ -3017,14 +3105,24 @@ const MapModule = {
     _lastContainerSize:           null,
     _initViewApplied:             false,
 
+    _allowBearingDrag() {
+        const cfg = CONFIG.MAP_IMAGE || {};
+        return cfg.allowBearingDrag !== false;
+    },
+
     _cameraLock() {
         const cfg = CONFIG.MAP_IMAGE || {};
-        const bearing = this._lockedBearing != null
-            ? this._lockedBearing
-            : (Number.isFinite(Number(cfg.bearing)) ? Number(cfg.bearing) : -90);
         const pitch = this._lockedPitch != null
             ? this._lockedPitch
             : (Number.isFinite(Number(cfg.pitch)) ? Number(cfg.pitch) : 45);
+        let bearing;
+        if (this._allowBearingDrag() && this._map) {
+            bearing = this._map.getBearing();
+        } else if (this._lockedBearing != null) {
+            bearing = this._lockedBearing;
+        } else {
+            bearing = Number.isFinite(Number(cfg.bearing)) ? Number(cfg.bearing) : -90;
+        }
         return { bearing, pitch };
     },
 
@@ -3083,7 +3181,7 @@ const MapModule = {
         if (!p || typeof p !== 'object') return this._illustrationFitPadding();
         if (State.isPC) return p;
         return {
-            top:    p.top    != null ? p.top    : 60,
+            top:    p.mobileTop != null ? p.mobileTop : (p.top != null ? p.top : 60),
             bottom: p.mobileBottom != null ? p.mobileBottom : 160,
             left:   p.left   != null ? p.left   : 30,
             right:  p.right  != null ? p.right  : 30
@@ -3155,36 +3253,46 @@ const MapModule = {
         return this._initViewOffset();
     },
 
-    /** maxBounds・回転禁止・ピッチ固定。recalcMinZoom=true のときだけ minZoom を fit 再計算 */
+    /** maxBounds・ピッチ固定。allowBearingDrag 時は右クリック／2本指で方位回転可 */
     _applyMapConstraints(opts = {}) {
         const map = this._map;
         const cfg = CONFIG.MAP_IMAGE;
         if (!map || !cfg) return;
 
         const cam = this._cameraLock();
-        this._lockedBearing = cam.bearing;
         this._lockedPitch = cam.pitch;
+        if (!this._allowBearingDrag()) {
+            this._lockedBearing = cam.bearing;
+        }
 
         if (cfg.maxBounds) map.setMaxBounds(cfg.maxBounds);
-        if (map.dragRotate) map.dragRotate.disable();
-        if (map.touchZoomRotate) map.touchZoomRotate.disableRotation();
+        if (this._allowBearingDrag()) {
+            if (map.dragRotate) map.dragRotate.enable();
+            if (map.touchZoomRotate) map.touchZoomRotate.enableRotation();
+        } else {
+            if (map.dragRotate) map.dragRotate.disable();
+            if (map.touchZoomRotate) map.touchZoomRotate.disableRotation();
+        }
         map.setMinPitch(cam.pitch);
         map.setMaxPitch(cam.pitch);
 
         if (!this._orientationLocked) {
             this._orientationLocked = true;
-            const snapOrientation = () => {
+            const snapPitchOnly = () => {
                 if (!this._map) return;
-                const lock = this._cameraLock();
-                if (Math.abs(this._map.getBearing() - lock.bearing) > 0.05) {
-                    this._map.setBearing(lock.bearing);
-                }
-                if (Math.abs(this._map.getPitch() - lock.pitch) > 0.05) {
-                    this._map.setPitch(lock.pitch);
+                const pitch = this._lockedPitch != null
+                    ? this._lockedPitch
+                    : (Number.isFinite(Number(cfg.pitch)) ? Number(cfg.pitch) : 45);
+                if (Math.abs(this._map.getPitch() - pitch) > 0.05) {
+                    this._map.setPitch(pitch);
                 }
             };
-            map.on('rotate', snapOrientation);
-            map.on('pitch', snapOrientation);
+            map.on('pitch', snapPitchOnly);
+            if (this._allowBearingDrag()) {
+                map.on('rotateend', () => {
+                    if (this._map) this._lockedBearing = this._map.getBearing();
+                });
+            }
         }
 
         if (opts.recalcMinZoom !== false) {
@@ -3233,7 +3341,7 @@ const MapModule = {
             ? Math.max(fitMinZ, floorMinZ)
             : fitMinZ;
         /* initZoom から大きく離れないよう上限（ズームアウト過多を防止） */
-        if (Number.isFinite(initZ) && initZ > 0) {
+        if (Number.isFinite(initZ) && initZ > 0 && !cfg.initUseFitBounds) {
             minZ = Math.max(minZ, initZ - 0.5);
         }
         map.setMinZoom(minZ);
@@ -3249,6 +3357,24 @@ const MapModule = {
             pitch:    cam.pitch,
             duration: opts.duration != null ? opts.duration : 0,
             maxZoom:  CONFIG.MAP_IMAGE.maxZoom ?? 22
+        });
+    },
+
+    /** 起動時: イラスト四隅に fit（initUseFitBounds） */
+    _applyInitFitBounds(opts = {}) {
+        if (!this._map) return;
+        const cfg = CONFIG.MAP_IMAGE;
+        const cam = this._cameraLock();
+        const bounds = this._initViewBoundsPair() || this._illustrationBoundsPair();
+        const cap = Number(cfg.initFitMaxZoom);
+        const maxZoom = Number.isFinite(cap) ? cap : (cfg.maxZoom ?? 22);
+        this._map.fitBounds(bounds, {
+            padding:  this._initViewPadding(),
+            offset:   this._resolveInitViewOffset(cfg),
+            bearing:  cam.bearing,
+            pitch:    cam.pitch,
+            duration: opts.duration != null ? opts.duration : 0,
+            maxZoom
         });
     },
 
@@ -3276,7 +3402,9 @@ const MapModule = {
         if (!this._map) return;
         this._map.resize();
         this._applyMapConstraints({ recalcMinZoom: true });
-        this._applyInitView(opts);
+        const cfg = CONFIG.MAP_IMAGE || {};
+        if (cfg.initUseFitBounds) this._applyInitFitBounds(opts);
+        else this._applyInitView(opts);
         this._initViewApplied = true;
     },
 
@@ -3298,7 +3426,9 @@ const MapModule = {
                     UIModule.syncMarkerDisplay();
                 }
             });
-            this._applyInitView({ duration: 800 });
+            const cfg = CONFIG.MAP_IMAGE || {};
+            if (cfg.initUseFitBounds) this._applyInitFitBounds({ duration: 800 });
+            else this._applyInitView({ duration: 800 });
         }, 0);
     },
 
@@ -3347,12 +3477,13 @@ const MapModule = {
             pitch:            this._lockedPitch,
             minPitch:         this._lockedPitch,
             maxPitch:         this._lockedPitch,
-            dragRotate:       false,
+            dragRotate:       this._allowBearingDrag(),
             pitchWithRotate:  false,
             touchPitchRotate: false,
             antialias:        true
         });
         State.map = this._map;
+        this._map.getCanvas().addEventListener('contextmenu', (e) => e.preventDefault());
 
         const onMapReady = () => {
             if (this._loaded) return;
@@ -4044,16 +4175,16 @@ const UIModule = {
                 return;
             }
             if (allOn) return;
-            let ok;
             if (emphasis.length) {
-                ok = emphasis.indexOf(normalizeStoreId_(spot.storeId)) !== -1;
-            } else {
-                const cat = App._effectiveFilterCategorySpot(spot);
-                ok = App._selectedCategories.has(cat);
-                if (ok && State.selectedTags.size > 0) {
-                    const spotTags = (State.language === 'ja' ? spot.tags : spot.tags_en) || [];
-                    ok = spotTags.some(tag => State.selectedTags.has(tag));
-                }
+                const hit = emphasis.indexOf(normalizeStoreId_(spot.storeId)) !== -1;
+                if (hit) el.classList.add('marker-focus');
+                return;
+            }
+            const cat = App._effectiveFilterCategorySpot(spot);
+            let ok = App._selectedCategories.has(cat);
+            if (ok && State.selectedTags.size > 0) {
+                const spotTags = (State.language === 'ja' ? spot.tags : spot.tags_en) || [];
+                ok = spotTags.some(tag => State.selectedTags.has(tag));
             }
             el.classList.add(ok ? 'marker-focus' : 'marker-dim');
         };
@@ -4139,7 +4270,7 @@ const UIModule = {
         el.setAttribute('aria-label', `${count}件のスポット`);
 
         const inner = document.createElement('div');
-        inner.className = 'marker-inner floating';
+        inner.className = 'marker-inner';
         inner.style.borderColor = si.color;
 
         const clip = document.createElement('div');
@@ -4180,7 +4311,7 @@ const UIModule = {
             ClusterModule.expandCluster(coords);
         });
 
-        const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
             .setLngLat(coords).addTo(MapModule._map);
         State.activeMarkers.push(marker);
     },
@@ -4193,7 +4324,7 @@ const UIModule = {
         if (!spotsVisible) el.style.display = 'none';
 
         const inner = document.createElement('div');
-        inner.className = 'marker-inner floating';
+        inner.className = 'marker-inner';
         inner.style.borderColor = si.color;
 
         const clip = document.createElement('div');
@@ -4214,7 +4345,6 @@ const UIModule = {
         }
         inner.appendChild(clip);
 
-        inner.classList.add('floating');
         el.appendChild(inner);
 
         if (spot.livePost) {
@@ -4227,40 +4357,28 @@ const UIModule = {
 
         el.addEventListener('click', e => { e.stopPropagation(); App.selectSpot(spot); });
 
-        const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
             .setLngLat(spot.coords).addTo(MapModule._map);
         State.activeMarkers.push(marker);
     },
 
-    _appendFixedHtmlMarker(spot, spotsVisible) {
+    _resolveFixedPinIconSrc(spot) {
+        const byStore = CONFIG.FIXED_PIN_ICON_BY_STORE_ID || {};
+        const storeKey = normalizeStoreId_(spot.storeId);
+        if (storeKey && byStore[storeKey]) return byStore[storeKey];
+        if (spot.category === 'kids_play' && spot.imageUrl3) return spot.imageUrl3;
         const icons = CONFIG.FIXED_PIN_ICONS || {};
         const iconFile = icons[spot.category] || null;
-        const el = document.createElement('div');
-        el.className = 'custom-marker custom-marker--fixed';
-        el.id = `marker-${spot.id}`;
-        if (!spotsVisible) el.style.display = 'none';
+        return iconFile ? `assets/fixed-pins/${iconFile}` : null;
+    },
 
-        const size = CONFIG.FIXED_PIN_SIZE || 30;
-        if (iconFile) {
-            const img = document.createElement('img');
-            img.src = `assets/fixed-pins/${iconFile}`;
-            img.alt = '';
-            img.style.cssText = `width:${size}px;height:${size}px;object-fit:contain;`;
-            img.onerror = () => {
-                img.style.display = 'none';
-                const fallback = document.createElement('span');
-                fallback.style.fontSize = `${Math.round(size * 0.7)}px`;
-                fallback.textContent = spot.emoji || '📍';
-                el.appendChild(fallback);
-            };
-            el.appendChild(img);
-        } else {
-            const fallback = document.createElement('span');
-            fallback.style.fontSize = `${Math.round(size * 0.7)}px`;
-            fallback.textContent = spot.emoji || '📍';
-            el.appendChild(fallback);
-        }
+    _fixedPinUsesCircularLogo(spot) {
+        const ids = CONFIG.FIXED_PIN_CIRCULAR_LOGO_STORE_IDS || [];
+        const key = normalizeStoreId_(spot.storeId);
+        return key && ids.indexOf(key) !== -1;
+    },
 
+    _bindFixedMarkerClick(spot, el) {
         el.addEventListener('click', e => {
             e.stopPropagation();
             document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('active'));
@@ -4272,6 +4390,73 @@ const UIModule = {
             }
             UIModule.openModal(spot.id);
         });
+    },
+
+    _appendFixedCircularLogoMarker(spot, spotsVisible, logoSrc) {
+        const si = getStatusInfo(val(spot, 'status'));
+        const el = document.createElement('div');
+        el.className = 'custom-marker custom-marker--fixed custom-marker--fixed-circle';
+        el.id = `marker-${spot.id}`;
+        if (!spotsVisible) el.style.display = 'none';
+
+        const inner = document.createElement('div');
+        inner.className = 'marker-inner';
+        inner.style.borderColor = si.color;
+
+        const clip = document.createElement('div');
+        clip.className = 'marker-clip';
+        const img = document.createElement('img');
+        img.src = logoSrc;
+        img.alt = '';
+        img.className = 'marker-image marker-image--contain';
+        clip.appendChild(img);
+        inner.appendChild(clip);
+        el.appendChild(inner);
+
+        this._bindFixedMarkerClick(spot, el);
+
+        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+            .setLngLat(spot.coords)
+            .addTo(MapModule._map);
+        State.fixedMarkers.push(marker);
+    },
+
+    _appendFixedHtmlMarker(spot, spotsVisible) {
+        const pinSrc = this._resolveFixedPinIconSrc(spot);
+        if (pinSrc && this._fixedPinUsesCircularLogo(spot)) {
+            this._appendFixedCircularLogoMarker(spot, spotsVisible, pinSrc);
+            return;
+        }
+        const el = document.createElement('div');
+        el.className = 'custom-marker custom-marker--fixed';
+        el.id = `marker-${spot.id}`;
+        if (!spotsVisible) el.style.display = 'none';
+
+        const visual = document.createElement('div');
+        visual.className = 'fixed-pin-visual';
+        const size = CONFIG.FIXED_PIN_SIZE || 30;
+        if (pinSrc) {
+            const img = document.createElement('img');
+            img.src = pinSrc;
+            img.alt = '';
+            img.style.cssText = `width:${size}px;height:${size}px;object-fit:contain;`;
+            img.onerror = () => {
+                img.style.display = 'none';
+                const fallback = document.createElement('span');
+                fallback.style.fontSize = `${Math.round(size * 0.7)}px`;
+                fallback.textContent = spot.emoji || '📍';
+                visual.appendChild(fallback);
+            };
+            visual.appendChild(img);
+        } else {
+            const fallback = document.createElement('span');
+            fallback.style.fontSize = `${Math.round(size * 0.7)}px`;
+            fallback.textContent = spot.emoji || '📍';
+            visual.appendChild(fallback);
+        }
+        el.appendChild(visual);
+
+        this._bindFixedMarkerClick(spot, el);
 
         const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
             .setLngLat(spot.coords)
@@ -4683,6 +4868,8 @@ const UIModule = {
             } else {
                 this._setActiveTab('tab-filter');
             }
+            State.emphasisStoreIds = [];
+            this.applyPinEmphasis();
         }
     },
 
@@ -4952,9 +5139,21 @@ const UIModule = {
             }
         }
 
-        document.getElementById('btn-nav-text').innerText = t('go');
-        document.getElementById('modal-nav-btn').href =
-            `https://www.google.com/maps/dir/?api=1&destination=${spot.coords[1]},${spot.coords[0]}`;
+        const igBtn = document.getElementById('modal-instagram-btn');
+        const igMap = CONFIG.INSTAGRAM_BY_STORE_ID || {};
+        const igKey = normalizeStoreId_(spot.storeId);
+        const igUrl = igKey ? igMap[igKey] : '';
+        if (igBtn) {
+            if (igUrl) {
+                igBtn.style.display = 'block';
+                igBtn.href = igUrl;
+                const igText = document.getElementById('btn-instagram-text');
+                if (igText) igText.innerText = t('instagram');
+            } else {
+                igBtn.style.display = 'none';
+                igBtn.removeAttribute('href');
+            }
+        }
 
         document.getElementById('btn-coupon-text').innerText = t('coupon');
         document.getElementById('modal-coupon-btn').style.display = val(spot, 'coupon') ? 'block' : 'none';
@@ -5243,44 +5442,12 @@ const App = {
         this._handleDeepLink();
     },
 
-    /** データ取得後、初期カメラ確定後にピンが画面内に入るよう寄せる */
+    /**
+     * データ取得後のカメラ調整。
+     * 通常起動は _finalizeInitView（イラスト全体）のまま。?spot= のときは _handleDeepLink で寄せる。
+     */
     _focusMapWhenReady() {
-        if (!State.allSpots.length && !State.fixedSpots.length) return;
-        const focus = () => {
-            const spots = State.allSpots.filter(s =>
-                LayerManager.getDefs().spots.visible
-                && App._selectedCategories.has(App._effectiveFilterCategorySpot(s))
-            );
-            if (spots.length === 1) MapModule.flyTo(spots[0]);
-            else if (spots.length > 1) MapModule.fitBounds();
-            else if (State.fixedSpots.length === 1) MapModule.flyTo(State.fixedSpots[0]);
-            else if (State.fixedSpots.length > 1) {
-                const bounds = new mapboxgl.LngLatBounds();
-                State.fixedSpots.forEach(s => bounds.extend(s.coords));
-                const cam = MapModule._cameraLock();
-                MapModule._map.fitBounds(bounds, {
-                    padding: State.isPC
-                        ? { top: 80, bottom: 80, left: 50, right: 50 }
-                        : { top: 80, bottom: 260, left: 30, right: 30 },
-                    bearing: cam.bearing,
-                    pitch: cam.pitch,
-                    duration: 600
-                });
-            } else {
-                MapModule._fitIllustrationBounds({ duration: 600 });
-            }
-        };
-        if (MapModule._initViewApplied) {
-            focus();
-            return;
-        }
-        let tries = 0;
-        const timer = setInterval(() => {
-            if (MapModule._initViewApplied || ++tries > 200) {
-                clearInterval(timer);
-                focus();
-            }
-        }, 50);
+        if (new URLSearchParams(location.search).get('spot')) return;
     },
 
     /**

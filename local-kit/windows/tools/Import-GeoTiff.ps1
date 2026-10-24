@@ -20,8 +20,12 @@ if (-not (Get-Command gdalinfo -ErrorAction SilentlyContinue)) {
 $outWebp = Join-Path $WebRoot "map-qgis.webp"
 $outConfig = Join-Path $WebRoot "config.local.js"
 
-& gdal_translate -of WEBP -co QUALITY=90 $GeoTiff $outWebp
-$json = & gdalinfo -json $GeoTiff | ConvertFrom-Json
+# Int16 等は WebP 非対応のため Byte にスケール
+& gdal_translate -of WEBP -ot Byte -scale -co QUALITY=90 $GeoTiff $outWebp
+$infoJson = Join-Path $env:TEMP ("gdalinfo-" + [Guid]::NewGuid().ToString("n") + ".json")
+& gdalinfo -json $GeoTiff | Set-Content -Path $infoJson -Encoding UTF8
+$json = Get-Content -Path $infoJson -Raw -Encoding UTF8 | ConvertFrom-Json
+Remove-Item -Path $infoJson -Force -ErrorAction SilentlyContinue
 $cc = $json.cornerCoordinates
 $coords = @(
     @($cc.upperLeft[0], $cc.upperLeft[1]),

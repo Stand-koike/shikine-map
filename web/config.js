@@ -1,7 +1,7 @@
 /**
  * エリア設定 — 敷根公園フェスマップ（shikine-map）
  *
- * イラスト対象: 総合運動公園（四隅 WGS84 は運営確認値。pgw 推定は MAP_GEOTIFF_SHIKINE.md 参考）。
+ * イラスト対象: 総合運動公園（四隅・map.webp は QGIS 書き出し park_4326.tif 由来）。
  * ピン設計（飲食4 + 固定9）: web/docs/PIN_INVENTORY_SHIKINE.md
  *
  * ローカル微調整: config.local.js（Git 除外）
@@ -16,21 +16,16 @@
         : {};
 
     /**
-     * 1024×724 PNG（map.webp）の四隅 WGS84。運営確認の座標（QGIS / 現地合わせ）。
-     * 順序: NW, NE, SE, SW（Mapbox image source）。@see web/docs/MAP_GEOTIFF_SHIKINE.md
+     * map.webp 外枠 WGS84（Mapbox: 画像 TL, TR, BR, BL）。
+     * qgis/export/park_4326.tif → gdalinfo cornerCoordinates（2026-10-24）。
+     * @see web/docs/MAP_GEOTIFF_SHIKINE.md
      */
-    /**
-     * map.webp 外枠四隅の WGS84（Mapbox image source: NW, NE, SE, SW）。
-     * QGIS Georeferencer の GCP 地上座標（4point.csv）とは別 — GCP が画像角以外のピクセルにあるため、
-     * park.png.points のアフィンから (0,0)(W,0)(W,H)(0,H) を計算した値を使う。
-     * @see web/docs/georef/park.png.points / compute_image_corners.py
-     */
-    /* 未ワープの map.webp。QGIS と同じ位置合わせは EPSG:4326 GeoTIFF が来るまで行わない。 */
-    var MAP_NW = [138.93004574694812, 34.68014377395333];
-    var MAP_NE = [138.9344634492879, 34.68061954815408];
-    var MAP_SE = [138.9343196484562, 34.68385877093156];
-    var MAP_SW = [138.92990182365062, 34.68338309824799];
-    var mapCoords = [MAP_NW, MAP_NE, MAP_SE, MAP_SW];
+    var MAP_TL = [138.9290221, 34.6837438];
+    var MAP_TR = [138.935199, 34.6837438];
+    var MAP_BR = [138.935199, 34.680125];
+    var MAP_BL = [138.9290221, 34.680125];
+    var mapCoords = [MAP_TL, MAP_TR, MAP_BR, MAP_BL];
+
     var minLng = Math.min(mapCoords[0][0], mapCoords[1][0], mapCoords[2][0], mapCoords[3][0]);
     var maxLng = Math.max(mapCoords[0][0], mapCoords[1][0], mapCoords[2][0], mapCoords[3][0]);
     var minLat = Math.min(mapCoords[0][1], mapCoords[1][1], mapCoords[2][1], mapCoords[3][1]);
@@ -39,6 +34,20 @@
     var PARK_LAT = (minLat + maxLat) / 2;
     var padLng = (maxLng - minLng) * 0.2;
     var padLat = (maxLat - minLat) * 0.2;
+
+    /** 初期 fit 用に四隅を中心へ少し縮め、公園全体を画面いっぱいに近づける */
+    function scaleMapCoords(coords, factor) {
+        var lng = 0, lat = 0, i;
+        for (i = 0; i < coords.length; i++) {
+            lng += coords[i][0];
+            lat += coords[i][1];
+        }
+        lng /= coords.length;
+        lat /= coords.length;
+        return coords.map(function (pt) {
+            return [lng + (pt[0] - lng) * factor, lat + (pt[1] - lat) * factor];
+        });
+    }
 
     window.__SHIMODA_MAP_CONFIG__ = {
         APP_TITLE: '敷根公園フェスマップ',
@@ -67,7 +76,7 @@
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: '20261024-restore-map',
+            cacheVersion: '20261024-park4326',
             solarLat:   PARK_LAT,
             solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',
@@ -77,19 +86,36 @@
             lngOffset:  0,
             center:    [PARK_LNG, PARK_LAT],
             initCenter: [PARK_LNG, PARK_LAT],
-            initZoom:  18.0,
-            initZoomMobile: 17.6,
+            initZoom:  19.2,
+            initZoomMobile: 18.85,
             initCenterMobile: [PARK_LNG, PARK_LAT],
-            minZoom:   17.2,
-            minZoomMobile: 16.9,
+            minZoom:   16.6,
+            minZoomMobile: 16.4,
             maxZoom:   20,
             initUseFitBounds: true,
+            /** 起動時 fit の対象（中心寄り・イラスト四隅は画面外にはみ出す） */
+            initViewCoordinates: scaleMapCoords(mapCoords, 0.68),
+            /** fitBounds 初期表示のズーム上限 */
+            initFitMaxZoom: 19.85,
+            initViewPadding: {
+                top: 40,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                mobileTop: 36,
+                mobileBottom: 150
+            },
+            /** 画面上の見え方調整（px）— 左コントロール／下カードシート分 */
+            initViewOffset: [28, 6],
+            initViewOffsetMobile: [0, 52],
             maxBounds: [
                 [minLng - padLng, minLat - padLat],
                 [maxLng + padLng, maxLat + padLat]
             ],
-            bearing:   0,
-            pitch:     45
+            bearing:   -100,
+            pitch:     45,
+            /** 右クリックドラッグでマップ回転（ピッチは固定） */
+            allowBearingDrag: true
         },
 
         POLL_INTERVAL: 30000,
@@ -104,7 +130,23 @@
             pool: 'pool.png',
             park_office: 'park_office.png'
         },
-        FIXED_PIN_SIZE: 36,
+        /** store_id ごとのマップピン画像（`assets/...` または HTTPS） */
+        FIXED_PIN_ICON_BY_STORE_ID: {
+            kids_wakuwaku: 'assets/kids/sponsor-shimoda-baby-kids.webp'
+        },
+        /** 丸型ピン（店舗同型）の中に FIXED_PIN_ICON_BY_STORE_ID の画像を表示 */
+        FIXED_PIN_CIRCULAR_LOGO_STORE_IDS: ['kids_wakuwaku'],
+        /** モーダルに Instagram リンクを出す store_id */
+        INSTAGRAM_BY_STORE_ID: {
+            food_12kitchen: 'https://www.instagram.com/12kitchen_shimoda/?utm_source=ig_web_button_share_sheet',
+            food_makimaki: 'https://www.instagram.com/izushimodamakimaki/?utm_source=ig_web_button_share_sheet',
+            kids_wakuwaku: 'https://www.instagram.com/shimoda.babyandkids/?utm_source=ig_web_button_share_sheet'
+        },
+        /** 固定ピン PNG 辺（基準 36px の 150%） */
+        FIXED_PIN_SIZE: 54,
+        /** 店舗ピン外枠（基準 60/44px の 80%）— CSS と揃える */
+        VENDOR_PIN_SIZE: 48,
+        VENDOR_PIN_SIZE_MOBILE: 35,
         /** タップしてもモーダルを開かない（マップアイコンのみ） */
         FIXED_PIN_NO_MODAL: ['toilet'],
 
@@ -147,9 +189,9 @@
             phone: '0558-23-6333'
         },
 
-        /** QGIS 等から出した参照点（web/data/point_029d.geojson） */
+        /** QGIS 公式点の控え（デバッグ時のみ true） */
         SURVEY_POINTS: {
-            enabled:    true,
+            enabled:    false,
             url:        'data/point_029d.geojson',
             showLabels: true
         },
@@ -164,7 +206,7 @@
 
         TRANSLATIONS: {
             ja: {
-                all: 'すべて', go: 'Google Mapsで見る', coupon: 'クーポンを使う',
+                all: 'すべて', instagram: 'Instagram', coupon: 'クーポンを使う',
                 loading: '読み込み中...', noData: 'データなし', filter: '探す',
                 layers: 'レイヤー', newsListTitle: 'お知らせ', updating: 'データ更新中...',
                 hours: '営業時間', tags: 'タグ', allTags: 'すべてのタグ', map: 'マップ',
@@ -180,7 +222,7 @@
                 findHint: 'ピンは消さず、対象を大きく表示します'
             },
             en: {
-                all: 'All', go: 'Open in Google Maps', coupon: 'Coupon',
+                all: 'All', instagram: 'Instagram', coupon: 'Coupon',
                 loading: 'Loading...', noData: 'No Data', filter: 'Find',
                 layers: 'Layers', newsListTitle: 'News', updating: 'Updating...',
                 hours: 'Hours', tags: 'Tags', allTags: 'All Tags', map: 'Map',
