@@ -9,7 +9,7 @@
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
     <script src="line-contract.js"></script>
     <!-- 四隅変更時は ?v= を更新（GitHub Pages の config.js 長期キャッシュ対策） -->
-    <script src="config.js?v=20261024-park4326"></script>
+    <script src="config.js?v=20261024-bearing-100"></script>
     <script src="config.local.js" onerror="void 0"></script>
     <script>
         (function () {
@@ -408,12 +408,20 @@
         /* ============================================================
            MARKERS
            ============================================================ */
-        .custom-marker {
-            width: 60px; height: 60px; cursor: pointer; z-index: 10;
+        /* 店舗ピン（固定マスタ・LIVE ピン型は別定義）— 基準サイズの 80% */
+        .custom-marker:not(.custom-marker--fixed):not(.custom-marker--live-pin) {
+            width: 48px; height: 48px; cursor: pointer; z-index: 10;
         }
         @media (max-width: 767px) {
-            .custom-marker { width: 44px; height: 44px; }
-            .marker-emoji { font-size: 20px !important; }
+            .custom-marker:not(.custom-marker--fixed):not(.custom-marker--live-pin) {
+                width: 35px; height: 35px;
+            }
+            .custom-marker:not(.custom-marker--fixed) .marker-emoji {
+                font-size: 16px !important;
+            }
+        }
+        .custom-marker:not(.custom-marker--fixed) .marker-emoji {
+            font-size: 22px;
         }
         .custom-marker.active { z-index: 100; }
         /* 固定マスタ（トイレ・駐車場等）— フロートなし・PNG ピン */
@@ -436,6 +444,34 @@
         .custom-marker--fixed.active {
             z-index: 90;
             transform: scale(1.15);
+        }
+        /* 固定マスタの一部: 店舗同型の丸ピン内にロゴ（わくわく広場など） */
+        .custom-marker--fixed-circle {
+            width: 48px;
+            height: 48px;
+            filter: none;
+        }
+        @media (max-width: 767px) {
+            .custom-marker--fixed-circle {
+                width: 35px;
+                height: 35px;
+            }
+        }
+        .custom-marker--fixed-circle .marker-image--contain {
+            object-fit: contain;
+            padding: 5px;
+            box-sizing: border-box;
+            background: #fff;
+        }
+        .custom-marker--fixed-circle.active {
+            transform: none;
+        }
+        .custom-marker--fixed-circle.active .marker-inner {
+            transform: scale(1.55);
+            border-color: var(--color-accent);
+            border-width: 4px;
+            box-shadow: 0 0 0 4px rgba(255, 92, 56, 0.25), 0 6px 20px rgba(0, 0, 0, 0.4);
+            animation: marker-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
         .marker-inner {
             width: 100%; height: 100%; background: #fff; border-radius: 50%;
@@ -475,11 +511,26 @@
         /* overflow: hidden は画像クリッピング用に内側の別要素で対応 */
         .marker-clip {
             position: absolute; inset: 0; border-radius: 50%; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
         }
-        .floating { animation: float-safe 3s infinite ease-in-out; }
-        @keyframes float-safe { 0%, 100% { margin-top: 0; } 50% { margin-top: -8px; } }
-        .marker-image { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 2; }
-        .marker-emoji { font-size: 28px; z-index: 1; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .marker-inner.floating {
+            animation: float-safe 3s infinite ease-in-out;
+        }
+        @keyframes float-safe {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-6px); }
+        }
+        .marker-image {
+            width: 100%; height: 100%;
+            object-fit: contain; object-position: center center;
+            position: absolute; inset: 0; margin: auto;
+            z-index: 2; display: block;
+            box-sizing: border-box;
+        }
+        .custom-marker--cluster .marker-image {
+            object-fit: cover;
+        }
+        .marker-emoji { z-index: 1; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .status-badge { position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; z-index: 5; display: none; }
         .marker-post-badge {
             position: absolute; top: -4px; right: -4px;
@@ -777,7 +828,10 @@
             min-height: 100px;
             position: relative; overflow: hidden; background: #f7f7f7;
         }
-        .card-thumb { width: 100%; height: 100%; object-fit: cover; }
+        .card-thumb {
+            width: 100%; height: 100%; display: block;
+            object-fit: contain; object-position: center center;
+        }
         .card-emoji-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 48px; background: var(--color-secondary); }
         /* 画像上：各フィールドの有無のみ（テキスト本文は出さない） */
         .card-image-indicators {
@@ -1328,8 +1382,8 @@
         }
         /* LIVE マーカー: 頭＋下向き三角形で「ピン」のように立体感を出す（APNG も頭部に載せられる） */
         .custom-marker.custom-marker--live-pin {
-            width: 64px;
-            height: 78px;
+            width: 51px;
+            height: 62px;
             justify-content: flex-end;
             align-items: center;
             display: flex;
@@ -1337,8 +1391,8 @@
         }
         @media (max-width: 767px) {
             .custom-marker.custom-marker--live-pin {
-                width: 50px;
-                height: 62px;
+                width: 40px;
+                height: 50px;
             }
         }
         .marker-pin {
@@ -1350,8 +1404,8 @@
         }
         .marker-pin > .marker-inner,
         .marker-pin > .marker-inner-livepost {
-            width: 54px;
-            height: 54px;
+            width: 43px;
+            height: 43px;
             flex-shrink: 0;
             box-sizing: border-box;
             border-radius: 50%;
@@ -1367,8 +1421,8 @@
         @media (max-width: 767px) {
             .marker-pin > .marker-inner,
             .marker-pin > .marker-inner-livepost {
-                width: 42px;
-                height: 42px;
+                width: 34px;
+                height: 34px;
             }
         }
         .marker-pin--floating {
@@ -4025,16 +4079,16 @@ const UIModule = {
             if (!el) return;
             el.classList.remove('marker-dim', 'marker-focus');
             if (allOn) return;
-            let ok;
             if (emphasis.length) {
-                ok = emphasis.indexOf(normalizeStoreId_(spot.storeId)) !== -1;
-            } else {
-                const cat = App._effectiveFilterCategorySpot(spot);
-                ok = App._selectedCategories.has(cat);
-                if (ok && State.selectedTags.size > 0) {
-                    const spotTags = (State.language === 'ja' ? spot.tags : spot.tags_en) || [];
-                    ok = spotTags.some(tag => State.selectedTags.has(tag));
-                }
+                const hit = emphasis.indexOf(normalizeStoreId_(spot.storeId)) !== -1;
+                if (hit) el.classList.add('marker-focus');
+                return;
+            }
+            const cat = App._effectiveFilterCategorySpot(spot);
+            let ok = App._selectedCategories.has(cat);
+            if (ok && State.selectedTags.size > 0) {
+                const spotTags = (State.language === 'ja' ? spot.tags : spot.tags_en) || [];
+                ok = spotTags.some(tag => State.selectedTags.has(tag));
             }
             el.classList.add(ok ? 'marker-focus' : 'marker-dim');
         };
@@ -4131,7 +4185,7 @@ const UIModule = {
             ClusterModule.expandCluster(coords);
         });
 
-        const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
             .setLngLat(coords).addTo(MapModule._map);
         State.activeMarkers.push(marker);
     },
@@ -4165,7 +4219,6 @@ const UIModule = {
         }
         inner.appendChild(clip);
 
-        inner.classList.add('floating');
         el.appendChild(inner);
 
         if (spot.livePost) {
@@ -4178,23 +4231,85 @@ const UIModule = {
 
         el.addEventListener('click', e => { e.stopPropagation(); App.selectSpot(spot); });
 
-        const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
             .setLngLat(spot.coords).addTo(MapModule._map);
         State.activeMarkers.push(marker);
     },
 
-    _appendFixedHtmlMarker(spot, spotsVisible) {
+    _resolveFixedPinIconSrc(spot) {
+        const byStore = CONFIG.FIXED_PIN_ICON_BY_STORE_ID || {};
+        const storeKey = normalizeStoreId_(spot.storeId);
+        if (storeKey && byStore[storeKey]) return byStore[storeKey];
+        if (spot.category === 'kids_play' && spot.imageUrl3) return spot.imageUrl3;
         const icons = CONFIG.FIXED_PIN_ICONS || {};
         const iconFile = icons[spot.category] || null;
+        return iconFile ? `assets/fixed-pins/${iconFile}` : null;
+    },
+
+    _fixedPinUsesCircularLogo(spot) {
+        const ids = CONFIG.FIXED_PIN_CIRCULAR_LOGO_STORE_IDS || [];
+        const key = normalizeStoreId_(spot.storeId);
+        return key && ids.indexOf(key) !== -1;
+    },
+
+    _bindFixedMarkerClick(spot, el) {
+        el.addEventListener('click', e => {
+            e.stopPropagation();
+            document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('active'));
+            el.classList.add('active');
+            const noModal = (CONFIG.FIXED_PIN_NO_MODAL || []).indexOf(spot.category) !== -1;
+            if (noModal) {
+                if (MapModule.flyTo) MapModule.flyTo(spot);
+                return;
+            }
+            UIModule.openModal(spot.id);
+        });
+    },
+
+    _appendFixedCircularLogoMarker(spot, spotsVisible, logoSrc) {
+        const si = getStatusInfo(val(spot, 'status'));
+        const el = document.createElement('div');
+        el.className = 'custom-marker custom-marker--fixed custom-marker--fixed-circle';
+        el.id = `marker-${spot.id}`;
+        if (!spotsVisible) el.style.display = 'none';
+
+        const inner = document.createElement('div');
+        inner.className = 'marker-inner floating';
+        inner.style.borderColor = si.color;
+
+        const clip = document.createElement('div');
+        clip.className = 'marker-clip';
+        const img = document.createElement('img');
+        img.src = logoSrc;
+        img.alt = '';
+        img.className = 'marker-image marker-image--contain';
+        clip.appendChild(img);
+        inner.appendChild(clip);
+        el.appendChild(inner);
+
+        this._bindFixedMarkerClick(spot, el);
+
+        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+            .setLngLat(spot.coords)
+            .addTo(MapModule._map);
+        State.fixedMarkers.push(marker);
+    },
+
+    _appendFixedHtmlMarker(spot, spotsVisible) {
+        const pinSrc = this._resolveFixedPinIconSrc(spot);
+        if (pinSrc && this._fixedPinUsesCircularLogo(spot)) {
+            this._appendFixedCircularLogoMarker(spot, spotsVisible, pinSrc);
+            return;
+        }
         const el = document.createElement('div');
         el.className = 'custom-marker custom-marker--fixed';
         el.id = `marker-${spot.id}`;
         if (!spotsVisible) el.style.display = 'none';
 
         const size = CONFIG.FIXED_PIN_SIZE || 30;
-        if (iconFile) {
+        if (pinSrc) {
             const img = document.createElement('img');
-            img.src = `assets/fixed-pins/${iconFile}`;
+            img.src = pinSrc;
             img.alt = '';
             img.style.cssText = `width:${size}px;height:${size}px;object-fit:contain;`;
             img.onerror = () => {
@@ -4212,17 +4327,7 @@ const UIModule = {
             el.appendChild(fallback);
         }
 
-        el.addEventListener('click', e => {
-            e.stopPropagation();
-            document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('active'));
-            el.classList.add('active');
-            const noModal = (CONFIG.FIXED_PIN_NO_MODAL || []).indexOf(spot.category) !== -1;
-            if (noModal) {
-                if (MapModule.flyTo) MapModule.flyTo(spot);
-                return;
-            }
-            UIModule.openModal(spot.id);
-        });
+        this._bindFixedMarkerClick(spot, el);
 
         const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
             .setLngLat(spot.coords)
@@ -4627,6 +4732,8 @@ const UIModule = {
             const el = document.getElementById('timetable-overlay');
             el.classList.remove('open', 'is-full');
             this._setActiveTab('tab-filter');
+            State.emphasisStoreIds = [];
+            this.applyPinEmphasis();
         }
     },
 

@@ -83,7 +83,7 @@
                 [minLng - padLng, minLat - padLat],
                 [maxLng + padLng, maxLat + padLat]
             ],
-            bearing:   0,
+            bearing:   -100,
             pitch:     45,
             /** 右クリックドラッグでマップ回転（ピッチは固定） */
             allowBearingDrag: true
@@ -101,7 +101,17 @@
             pool: 'pool.png',
             park_office: 'park_office.png'
         },
-        FIXED_PIN_SIZE: 36,
+        /** store_id ごとのマップピン画像（`assets/...` または HTTPS） */
+        FIXED_PIN_ICON_BY_STORE_ID: {
+            kids_wakuwaku: 'assets/kids/sponsor-shimoda-baby-kids.webp'
+        },
+        /** 丸型ピン（店舗同型）の中に FIXED_PIN_ICON_BY_STORE_ID の画像を表示 */
+        FIXED_PIN_CIRCULAR_LOGO_STORE_IDS: ['kids_wakuwaku'],
+        /** 固定ピン PNG 辺（基準 36px の 150%） */
+        FIXED_PIN_SIZE: 54,
+        /** 店舗ピン外枠（基準 60/44px の 80%）— CSS と揃える */
+        VENDOR_PIN_SIZE: 48,
+        VENDOR_PIN_SIZE_MOBILE: 35,
         /** タップしてもモーダルを開かない（マップアイコンのみ） */
         FIXED_PIN_NO_MODAL: ['toilet'],
 
