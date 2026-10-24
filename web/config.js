@@ -128,7 +128,7 @@
             /** 画面上の見え方調整（px）— 左コントロール／下カードシート分 */
             initViewOffset: [28, 6],
             /** スマホ: 下シート分 Y、グラウンド中心が画面中央付近に来る微調整 */
-            initViewOffsetMobile: [-36, 42],
+            initViewOffsetMobile: [-36, 58],
             /**
              * fitBounds 後の追い込み（maxZoom 上限で fit だけでは変わらない分）
              * centerLng/Lat は度単位のパン（西・南がマイナス）
