@@ -65,7 +65,7 @@
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: '20261024-georef-file-corners',
+            cacheVersion: '20261024-pitch0',
             solarLat:   PARK_LAT,
             solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',
@@ -86,8 +86,9 @@
                 [minLng - padLng, minLat - padLat],
                 [maxLng + padLng, maxLat + padLat]
             ],
+            /* QGIS と同じ真上視。pitch 45° はイラストとピンが視覚的にずれて見える */
             bearing:   0,
-            pitch:     45
+            pitch:     0
         },
 
         POLL_INTERVAL: 30000,
