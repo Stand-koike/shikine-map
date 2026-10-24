@@ -2161,6 +2161,22 @@ const DataModule = {
         DataModule._flashIndicator();
     },
 
+    /** スプシ C/D 列の lat・lng（度）。列入れ違えを下田付近の範囲で補正 */
+    _normalizeSheetLatLng(lat, lng) {
+        let latN = Number(lat);
+        let lngN = Number(lng);
+        if (!Number.isFinite(latN) || !Number.isFinite(lngN)) return null;
+        const latLooksLikeLng = latN >= 100 && latN <= 160 && Math.abs(lngN) < 60;
+        const lngLooksLikeLat = lngN >= 20 && lngN <= 50 && latN >= 100;
+        if (latLooksLikeLng || lngLooksLikeLat) {
+            const t = latN;
+            latN = lngN;
+            lngN = t;
+        }
+        if (latN < 20 || latN > 50 || lngN < 120 || lngN > 150) return null;
+        return { lat: latN, lng: lngN };
+    },
+
     _parse(json) {
         if (!json?.table?.rows) return [];
         const { COLS } = CONFIG;
@@ -2170,9 +2186,12 @@ const DataModule = {
             const lat  = row.c[COLS.LAT]?.v;
             const lng  = row.c[COLS.LNG]?.v;
             if (!name || lat == null || lng == null) return acc;
-            const latN = Number(lat);
-            const lngN = Number(lng);
-            if (!Number.isFinite(latN) || !Number.isFinite(lngN)) return acc;
+            const nameStr = String(name).trim();
+            if (nameStr === 'name' || lat === 'lat' || lng === 'lng') return acc;
+            const norm = DataModule._normalizeSheetLatLng(lat, lng);
+            if (!norm) return acc;
+            const latN = norm.lat;
+            const lngN = norm.lng;
             // hidden 列が false/"FALSE" なら非表示
             if (row.c[COLS.HIDDEN]?.v === false || row.c[COLS.HIDDEN]?.v === 'FALSE') return acc;
 
