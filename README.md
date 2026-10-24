@@ -12,7 +12,7 @@ Google スプレッドシートの出店・施設データを、イラスト地�
 - カテゴリ・タグでの絞り込み
 - 日本語 / 英語の切り替え
 
-LINE かわら版・WordPress 連携は **使いません**（設定で無効化済み）。
+LINE からの最新情報はマップ／店舗モーダルに出す想定です（フロント ON。投稿用 GAS は未接続）。WordPress 連携は使いません。
 
 ---
 
@@ -20,7 +20,16 @@ LINE かわら版・WordPress 連携は **使いません**（設定で無効化
 
 | 項目 | 手順 |
 |------|------|
+| **いまの整理（位置後入れ用）** | [web/docs/DATA_STATUS_SHIKINE.md](web/docs/DATA_STATUS_SHIKINE.md) |
+| イラスト地図（pgw） | [web/docs/MAP_GEOTIFF_SHIKINE.md](web/docs/MAP_GEOTIFF_SHIKINE.md) |
 | ピン一覧・データ項目 | [web/docs/PIN_INVENTORY_SHIKINE.md](web/docs/PIN_INVENTORY_SHIKINE.md) |
+| フード出店 4 店 | [web/docs/FOOD_VENDORS_SHIKINE.md](web/docs/FOOD_VENDORS_SHIKINE.md) |
+| タイムテーブル | [web/docs/EVENT_SCHEDULE_SHIKINE.md](web/docs/EVENT_SCHEDULE_SHIKINE.md) |
+| 屋内ワークショップ | [web/docs/WORKSHOPS_SHIKINE.md](web/docs/WORKSHOPS_SHIKINE.md) |
+| 屋外ステージ | [web/docs/OUTDOOR_STAGE_SHIKINE.md](web/docs/OUTDOOR_STAGE_SHIKINE.md) |
+| キッズスペース | [web/docs/KIDS_SPACE_SHIKINE.md](web/docs/KIDS_SPACE_SHIKINE.md) |
+| プール無料開放 | [web/docs/POOL_SHIKINE.md](web/docs/POOL_SHIKINE.md) |
+| 屋内事務所 | [web/docs/OFFICE_SHIKINE.md](web/docs/OFFICE_SHIKINE.md) |
 | スプレッドシート | [web/docs/SHEET_SETUP_SHIKINE.md](web/docs/SHEET_SETUP_SHIKINE.md) |
 | イラスト地図 | `web/map.webp` に差し替え、`config.js` の `MAP_IMAGE.coordinates` を更新 |
 | 本番公開 | [モバイル向けチェックリスト](web/docs/MOBILE_LAUNCH_CHECKLIST.md)（Pages・Secrets） |

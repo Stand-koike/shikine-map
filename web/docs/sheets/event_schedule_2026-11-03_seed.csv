@@ -1,0 +1,12 @@
+_reserved,start_time,end_time,title,performer,description,venue,event_date,sort_order,hidden,image_url,store_id
+,09:30,10:30,自然観察体験会,,参加無料・予約不要・雨天中止。外周コースで草花・樹木の観察。集合：敷根公園事務所前,敷根公園事務所前（集合）／屋内事務所,2026-11-03,3,,,office_nature_walk
+,10:00,16:00,敷根プール 無料開放,,小学校3年生以下は保護者付添必須。おむつがとれていないお子さまは入場不可,敷根公園屋内温水プール,2026-11-03,4,,,pool_shikine
+,10:00,11:00,青空ヨガ,中谷コーチ,参加費無料・予約不要・雨天中止。持ち物：ヨガマット,敷根公園野外ステージ,2026-11-03,5,,,stage_outdoor
+,10:00,16:00,わくわく広場,,入場無料。敷根プール前の芝生。わなげ・グラウンドゴルフ・まとあて・ぬりえ・うちわ・サーフボードペイント,敷根プール前芝生（キッズスペース）,2026-11-03,6,,,kids_wakuwaku
+,10:00,16:00,敷根公園フェス フードエリア,,フードエリア4店舗（タップで四店を強調）,敷根公園・フードエリア,2026-11-03,10,,,"food_makimaki,food_12kitchen,food_takahashi_toriniku,food_shimano"
+,12:15,13:00,キッズコアトレーニング,,楽しくカラダをうごかしましょう！,屋内ワークショップ・トレーニングルーム,2026-11-03,12,,,ws_kids_core
+,13:00,,第1部 参加型ステージ,音伽舎 OTOGIYA,世界の楽器にふれてみよう！,SHIKINE MUSIC STAGE（屋外ステージ）,2026-11-03,20,,,stage_outdoor
+,14:00,,第2部 スペシャルステージ,,,SHIKINE MUSIC STAGE（屋外ステージ）,2026-11-03,30,,,stage_outdoor
+,14:00,,,下田吹奏楽団 ジュニアブラス,,SHIKINE MUSIC STAGE（屋外ステージ）,2026-11-03,31,,,stage_outdoor
+,,,,Hybrid wolf,,SHIKINE MUSIC STAGE（屋外ステージ）,2026-11-03,32,,,stage_outdoor
+,,,,豆州白浜太鼓,,SHIKINE MUSIC STAGE（屋外ステージ）,2026-11-03,33,,,stage_outdoor

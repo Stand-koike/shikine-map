@@ -28,7 +28,7 @@ git push -u shikine HEAD:main
 3. **Settings → Pages → Build and deployment: GitHub Actions**
 4. **Settings → Secrets → Actions** に追加:
    - `MAPBOX_PUBLIC_TOKEN`
-   - `GOOGLE_SHEET_ID`（シート作成後）
+   - `GOOGLE_SHEET_ID`（専用ブック `1dmcJ12JuBWJPLxe43Ut4jVOaFpCqqpAgCRGvnwtxmRk`。共有は「リンクを知っている全員・閲覧者」）
 5. Mapbox トークンに URL 制限:  
    `https://stand-koike.github.io/shikine-map/*`
 

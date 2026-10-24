@@ -1,8 +1,8 @@
 /**
  * エリア設定 — 敷根公園フェスマップ（shikine-map）
  *
- * イラスト対象: 総合運動公園（四隅座標・map.webp は未差し替えの間はプレースホルダー）。
- * ピン設計（飲食4 + 固定7）: web/docs/PIN_INVENTORY_SHIKINE.md
+ * イラスト対象: 総合運動公園（geo_park.pgw → WGS84 四隅。CRS は JGD2011 第 VIII 系と仮定）。
+ * ピン設計（飲食4 + 固定9）: web/docs/PIN_INVENTORY_SHIKINE.md
  *
  * ローカル微調整: config.local.js（Git 除外）
  *
@@ -15,11 +15,25 @@
         ? window.__SHIMODA_MAP_SECRETS__
         : {};
 
-    /** 敷根公園付近の仮フレーム（イラスト差し替え時に coordinates を更新） */
-    var PARK_LNG = 138.9308;
-    var PARK_LAT = 34.6820;
-    var halfLng = 0.0033;
-    var halfLat = 0.0025;
+    /**
+     * geo_park.pgw（回転 0）+ 1024×724 PNG。
+     * ワールドファイルは CRS を持たない。数値はメートル規模のため
+     * EPSG:6676（JGD2011 / 平面直角座標系 第 VIII 系）→ EPSG:4326 と仮定。
+     * 四隅はピクセル中心ではなくラスタ外縁（GDAL 範囲）。NW, NE, SE, SW。
+     * @see web/docs/MAP_GEOTIFF_SHIKINE.md
+     */
+    var MAP_NW = [138.9290406612, 34.6837438420];
+    var MAP_NE = [138.9308388271, 34.6837374993];
+    var MAP_SE = [138.9308333876, 34.6826874174];
+    var MAP_SW = [138.9290352445, 34.6826937599];
+    var PARK_LNG = 138.9299370301;
+    var PARK_LAT = 34.6832156330;
+    var minLng = 138.9290352445;
+    var maxLng = 138.9308388271;
+    var minLat = 34.6826874174;
+    var maxLat = 34.6837438420;
+    var padLng = (maxLng - minLng) * 0.2;
+    var padLat = (maxLat - minLat) * 0.2;
 
     window.__SHIMODA_MAP_CONFIG__ = {
         APP_TITLE: '敷根公園フェスマップ',
@@ -48,31 +62,26 @@
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: '20261021-shikine-placeholder',
-            solarLat:   null,
-            solarLng:   null,
+            cacheVersion: '20261024-geo-park',
+            solarLat:   PARK_LAT,
+            solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',
 
-            coordinates: [
-                [PARK_LNG - halfLng, PARK_LAT + halfLat],
-                [PARK_LNG + halfLng, PARK_LAT + halfLat],
-                [PARK_LNG + halfLng, PARK_LAT - halfLat],
-                [PARK_LNG - halfLng, PARK_LAT - halfLat]
-            ],
+            coordinates: [MAP_NW, MAP_NE, MAP_SE, MAP_SW],
             latOffset:  0,
             lngOffset:  0,
             center:    [PARK_LNG, PARK_LAT],
             initCenter: [PARK_LNG, PARK_LAT],
-            initZoom:  16.5,
-            initZoomMobile: 16.0,
+            initZoom:  18.0,
+            initZoomMobile: 17.6,
             initCenterMobile: [PARK_LNG, PARK_LAT],
-            minZoom:   15.5,
-            minZoomMobile: 15.2,
-            maxZoom:   19,
+            minZoom:   17.2,
+            minZoomMobile: 16.9,
+            maxZoom:   20,
             initUseFitBounds: true,
             maxBounds: [
-                [PARK_LNG - halfLng * 1.4, PARK_LAT - halfLat * 1.4],
-                [PARK_LNG + halfLng * 1.4, PARK_LAT + halfLat * 1.4]
+                [minLng - padLng, minLat - padLat],
+                [maxLng + padLng, maxLat + padLat]
             ],
             bearing:   0,
             pitch:     45
@@ -80,44 +89,92 @@
 
         POLL_INTERVAL: 30000,
 
-        /**
-         * 固定マスタシート名（トイレ・ステージ・キッズ・WS）。
-         * シート名が決まったら文字列を設定。未決の間は null。
-         */
-        FIXED_MASTER_SHEET: null,
+        FIXED_MASTER_SHEET: '固定マスタ',
 
-        /**
-         * category → web/assets/fixed-pins/ 内の PNG。
-         * ファイル名はデザイン決定後に追加（toilet 以外は未設定）。
-         */
-        // FIXED_PIN_ICONS: { toilet: 'toilet.png', stage: '…', kids_play: '…', ws_indoor: '…' },
+        FIXED_PIN_ICONS: {
+            toilet: 'toilet.png',
+            stage: 'stage.png',
+            kids_play: 'kids_play.png',
+            ws_indoor: 'ws_indoor.png',
+            pool: 'pool.png',
+            park_office: 'park_office.png'
+        },
+        FIXED_PIN_SIZE: 36,
+        /** タップしてもモーダルを開かない（マップアイコンのみ） */
+        FIXED_PIN_NO_MODAL: ['toilet'],
 
-        /** 飲食 LINE かわら版。GAS・posts 準備後に true。 @see web/docs/LINE_KAWARA_SHIKINE.md */
-        ENABLE_LIVE_POSTS: false,
-        LIVE_POST_POLL_INTERVAL: 0,
+        /** LINE からの最新投稿をマップ／モーダルに出す（GAS 準備後に実投稿） */
+        ENABLE_LIVE_POSTS: true,
+        POSTS_SHEET: secrets.POSTS_SHEET || 'posts',
+        LIVE_POST_POLL_INTERVAL: 30000,
+
+        /** フェス全体タイムテーブル @see web/docs/EVENT_SCHEDULE_SHIKINE.md */
+        EVENTS_SHEET: secrets.EVENTS_SHEET || 'event_schedule',
+        EVENT_SCHEDULE_POLL_INTERVAL: 60000,
+        EVENT_SCHEDULE_COLS: {
+            START_TIME: 1, END_TIME: 2, TITLE: 3, PERFORMER: 4, DESCRIPTION: 5,
+            VENUE: 6, EVENT_DATE: 7, SORT_ORDER: 8, HIDDEN: 9, IMAGE_URL: 10,
+            STORE_ID: 11
+        },
+
+        /** 探す: シート category → 表示名。ピンは非表示にせず強調だけ */
+        FIND_GROUPS: [
+            { category: 'フードエリア', label: '飲食' },
+            { category: 'toilet', label: 'トイレ' },
+            { category: 'stage', label: 'ステージ' },
+            { category: 'kids_play', label: 'キッズ' },
+            { category: 'ws_indoor', label: 'ワークショップ' },
+            { category: 'pool', label: 'プール' },
+            { category: 'park_office', label: '事務所' }
+        ],
+
+        PARK_INFO: {
+            title: '敷根公園フェス 2026',
+            date: '2026年11月3日（火・祝）',
+            hours: '主な時間 10:00〜16:00（自然観察は 9:30〜）',
+            note: '入場無料',
+            contact: '下田市敷根公園屋内温水プール',
+            phone: '0558-23-6333'
+        },
 
         CLUSTER: {
-            enabled:          true,
+            enabled:          false,
             clusterMaxZoom:   17,
             clusterRadius:    55,
             clusterMinPoints: 2,
-            flyToZoom:        17.5
+            flyToZoom:        18.5
         },
 
         TRANSLATIONS: {
             ja: {
                 all: 'すべて', go: 'Google Mapsで見る', coupon: 'クーポンを使う',
-                loading: '読み込み中...', noData: 'データなし', filter: '絞り込み',
+                loading: '読み込み中...', noData: 'データなし', filter: '探す',
                 layers: 'レイヤー', newsListTitle: 'お知らせ', updating: 'データ更新中...',
                 hours: '営業時間', tags: 'タグ', allTags: 'すべてのタグ', map: 'マップ',
-                urlLink: 'リンク', descLabel: '説明', newsLabel: '補足'
+                urlLink: 'リンク', descLabel: '説明', newsLabel: '補足',
+                timetableTitle: 'タイムテーブル', timetableEmpty: 'スケジュールは準備中です',
+                timetableVenue: '会場',
+                applyLink: '参加申込はこちら',
+                kawaraView: '最新情報を見る',
+                kawaraTitle: '最新情報',
+                supportedBy: 'Supported by',
+                parkTitle: '公園',
+                findHint: 'ピンは消さず、対象を大きく表示します'
             },
             en: {
                 all: 'All', go: 'Open in Google Maps', coupon: 'Coupon',
-                loading: 'Loading...', noData: 'No Data', filter: 'Filter',
+                loading: 'Loading...', noData: 'No Data', filter: 'Find',
                 layers: 'Layers', newsListTitle: 'News', updating: 'Updating...',
                 hours: 'Hours', tags: 'Tags', allTags: 'All Tags', map: 'Map',
-                urlLink: 'Link', descLabel: 'About', newsLabel: 'Notes'
+                urlLink: 'Link', descLabel: 'About', newsLabel: 'Notes',
+                timetableTitle: 'Timetable', timetableEmpty: 'Schedule coming soon',
+                timetableVenue: 'Venue',
+                applyLink: 'Register here',
+                kawaraView: 'Latest update',
+                kawaraTitle: 'Latest',
+                supportedBy: 'Supported by',
+                parkTitle: 'Park',
+                findHint: 'Pins stay visible; matches are larger'
             }
         }
     };

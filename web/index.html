@@ -199,8 +199,50 @@
         /* ホームタブ: PC では非表示 */
         .bottom-tab-home { display: none; }
         @media (max-width: 767px) {
-            .bottom-tab-home { display: flex; }
+            .bottom-tab-home { display: none !important; }
+            #tab-layer, #tab-lang { display: none !important; }
         }
+        .bottom-tab-timetable, .bottom-tab-park { display: flex; }
+        .custom-marker.marker-dim {
+            opacity: 0.38;
+            transform: scale(0.72);
+            z-index: 6;
+        }
+        .custom-marker.marker-focus {
+            opacity: 1;
+            transform: scale(1.18);
+            z-index: 24;
+        }
+        .custom-marker--fixed.marker-dim { transform: scale(0.72); }
+        .custom-marker--fixed.marker-focus { transform: scale(1.18); }
+        .bottom-sheet {
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 210;
+            background: #fff; border-radius: 16px 16px 0 0;
+            display: none; flex-direction: column;
+            height: 42vh;
+            padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px));
+            box-shadow: 0 -8px 28px rgba(0,0,0,0.16);
+        }
+        .bottom-sheet.open { display: flex; }
+        .bottom-sheet.is-full {
+            height: calc(100vh - env(safe-area-inset-top, 0px));
+            border-radius: 0;
+        }
+        .sheet-handle {
+            flex: 0 0 auto; width: 100%; border: none; background: transparent;
+            padding: 10px 0 4px; cursor: pointer;
+        }
+        .sheet-handle-pill {
+            display: block; width: 40px; height: 4px; border-radius: 4px;
+            background: #ccc; margin: 0 auto;
+        }
+        .bottom-sheet .news-list-header { flex: 0 0 auto; }
+        .bottom-sheet .news-list-body { flex: 1; overflow-y: auto; }
+        .timetable-item { cursor: pointer; }
+        .timetable-item:active { background: #f5f5f5; }
+        .park-info { padding: 16px 18px; font-size: 14px; line-height: 1.55; color: #333; }
+        .park-info p { margin: 0 0 8px; }
+        .find-hint { font-size: 11px; color: #888; margin: 0 0 8px; line-height: 1.4; }
 
         /* ドロップダウンパネル共通 */
         .ctrl-panel-wrapper { position: relative; }
@@ -985,6 +1027,29 @@
             align-items: center; border-radius: 20px 20px 0 0; flex-shrink: 0;
         }
         .news-list-body { overflow-y: auto; flex: 1; }
+        .timetable-item {
+            padding: 12px 14px; border-bottom: 1px solid #eee;
+            display: flex; gap: 12px; align-items: flex-start;
+        }
+        .timetable-time {
+            flex: 0 0 72px; font-size: 13px; font-weight: bold;
+            color: var(--color-primary); line-height: 1.35;
+        }
+        .timetable-main { flex: 1; min-width: 0; }
+        .timetable-title { font-weight: bold; font-size: 14px; margin-bottom: 2px; }
+        .timetable-performer { font-size: 14px; color: #333; }
+        .timetable-desc { font-size: 12px; color: #666; margin-top: 4px; line-height: 1.45; }
+        .timetable-venue {
+            font-size: 11px; color: #888; margin-top: 4px;
+        }
+        .modal-sponsor {
+            display: none; align-items: center; justify-content: flex-end; gap: 8px;
+            margin: 16px 0 4px; padding-top: 12px; border-top: 1px solid #eee;
+            font-size: 12px; color: #888;
+        }
+        .modal-sponsor-logo {
+            width: 36px; height: 36px; object-fit: contain; flex-shrink: 0;
+        }
         .news-list-close {
             background: rgba(0,0,0,0.1); color: white; border: none; border-radius: 50%;
             width: 32px; height: 32px; cursor: pointer; font-size: 16px;
@@ -1457,15 +1522,15 @@
      ============================================================ -->
 <div class="controls-container" id="controls-container">
 
-    <!-- ホーム（マップリセット） — モバイルのみ表示 -->
+    <!-- ホーム（マップリセット） — モバイルでは非表示（探す／TT／公園の3ボタン） -->
     <button class="ctrl-btn bottom-tab-home tab-active" id="tab-home" onclick="UIModule.onTabTap('home')">
         <i class="fas fa-map"></i> <span id="home-btn-text">マップ</span>
     </button>
 
-    <!-- カテゴリフィルター -->
+    <!-- 探す -->
     <div class="ctrl-panel-wrapper">
         <button class="ctrl-btn primary" id="tab-filter" onclick="UIModule.onTabTap('filter')">
-            <i class="fas fa-filter"></i> <span id="filter-btn-text">絞り込み</span>
+            <i class="fas fa-search"></i> <span id="filter-btn-text">探す</span>
         </button>
         <div class="ctrl-panel" id="filter-panel">
             <div class="ctrl-panel-title">カテゴリ</div>
@@ -1485,6 +1550,16 @@
     </div>
 
     <!-- 言語切替 -->
+    <button class="ctrl-btn bottom-tab-timetable" id="tab-timetable" type="button"
+        onclick="UIModule.openTimetable()" aria-label="タイムテーブル">
+        <i class="fas fa-calendar-alt"></i> <span id="timetable-btn-text">タイムテーブル</span>
+    </button>
+
+    <button class="ctrl-btn bottom-tab-park" id="tab-park" type="button"
+        onclick="UIModule.openParkInfo()" aria-label="公園">
+        <i class="fas fa-tree"></i> <span id="park-btn-text">公園</span>
+    </button>
+
     <button class="ctrl-btn" id="tab-lang" onclick="UIModule.onTabTap('lang')">
         <i class="fas fa-globe"></i> <span id="lang-text">JP</span>
     </button>
@@ -1549,6 +1624,34 @@
 <!-- ============================================================
      MODALS
      ============================================================ -->
+
+<!-- タイムテーブル（下から引き上げ） -->
+<div class="bottom-sheet" id="timetable-overlay">
+    <button type="button" class="sheet-handle" onclick="UIModule.toggleTimetableHeight()" aria-label="高さを切り替える">
+        <span class="sheet-handle-pill"></span>
+    </button>
+    <div class="news-list-header">
+        <span id="timetable-title">タイムテーブル</span>
+        <button class="news-list-close" type="button" onclick="UIModule.closeTimetable(null, true)">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="news-list-body" id="timetable-content"></div>
+</div>
+
+<!-- 公園（3つ目ボタン・仮） -->
+<div class="bottom-sheet" id="park-overlay">
+    <button type="button" class="sheet-handle" onclick="UIModule.toggleParkHeight()" aria-label="高さを切り替える">
+        <span class="sheet-handle-pill"></span>
+    </button>
+    <div class="news-list-header">
+        <span id="park-sheet-title">公園</span>
+        <button class="news-list-close" type="button" onclick="UIModule.closeParkInfo(true)">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="news-list-body" id="park-content"></div>
+</div>
 
 <!-- ニュース一覧モーダル -->
 <div class="modal-overlay" id="news-list-overlay" onclick="UIModule.closeNewsList(event)">
@@ -1617,12 +1720,17 @@
                 <div class="modal-section-label modal-news-label" id="modal-news-label"></div>
                 <div class="modal-news-text" id="modal-news"></div>
             </div>
+            <div class="modal-sponsor" id="modal-sponsor-wrap" aria-label="協力">
+                <span id="modal-sponsor-label">Supported by</span>
+                <img class="modal-sponsor-logo" id="modal-sponsor-logo" src="" alt="">
+                <span id="modal-sponsor-name"></span>
+            </div>
             <a id="modal-nav-btn" class="btn-nav-large" target="_blank">
                 <i class="fas fa-location-arrow"></i> <span id="btn-nav-text">Google Mapsで見る</span>
             </a>
             <button type="button" class="btn-kawara btn-kawara-large" id="modal-kawara-btn"
                 onclick="UIModule.openKawaraFromModal()">
-                <i class="fas fa-newspaper" aria-hidden="true"></i> <span id="modal-kawara-text">かわら版を見る</span>
+                <i class="fas fa-newspaper" aria-hidden="true"></i> <span id="modal-kawara-text">最新情報を見る</span>
             </button>
             <button class="btn-coupon-large" id="modal-coupon-btn" onclick="UIModule.showCoupon()">
                 <i class="fas fa-ticket-alt"></i> <span id="btn-coupon-text">クーポンを使う</span>
@@ -1645,7 +1753,7 @@
 <div class="kawara-modal-overlay" id="kawara-modal-overlay" onclick="UIModule.closeKawaraModal(event)">
     <div class="kawara-modal-box" onclick="event.stopPropagation()">
         <div class="kawara-modal-header">
-            <span class="kawara-title-label" id="kawara-label">かわら版</span>
+            <span class="kawara-title-label" id="kawara-label">最新情報</span>
             <button type="button" class="kawara-close" onclick="UIModule.closeKawaraModal(null, true)" aria-label="閉じる">×</button>
         </div>
         <div class="kawara-modal-body">
@@ -1732,7 +1840,11 @@ const State = {
     fixedSpots:            [],
     fixedMarkers:          [],
     lastFixedDataHash:     '',
-    fixedPollInterval:     null
+    fixedPollInterval:     null,
+    scheduleItems:         [],
+    lastScheduleHash:      '',
+    schedulePollInterval:  null,
+    emphasisStoreIds:      []
 };
 
 // ================================================================
@@ -1751,6 +1863,13 @@ const getStatusInfo = (status) => {
 };
 
 const CATEGORY_ICONS = {
+    'フードエリア':   'fa-utensils',
+    'toilet':         'fa-restroom',
+    'stage':          'fa-music',
+    'kids_play':      'fa-child',
+    'ws_indoor':      'fa-chalkboard-user',
+    'pool':           'fa-person-swimming',
+    'park_office':    'fa-tree',
     'グルメ':         'fa-utensils',
     'レストラン':     'fa-utensils',
     'カフェ':         'fa-mug-hot',
@@ -1829,6 +1948,25 @@ function normalizeImageUrl(raw) {
     return s;
 }
 
+/** 店舗マスタの画像列: HTTPS / Drive に加え、リポジトリ同梱の assets/ パスを許可 */
+function resolveSheetMediaUrl(raw) {
+    if (raw == null) return '';
+    const s = String(raw).trim();
+    if (!s) return '';
+    if (/^https?:\/\//i.test(s)) return normalizeImageUrl(s);
+    const rel = s.replace(/^\.\//, '');
+    if (/^assets\//i.test(rel)) {
+        try {
+            const pageBase = window.location.href.replace(/[#?].*$/, '');
+            const dirBase = pageBase.endsWith('/') ? pageBase : pageBase.replace(/\/[^/]*$/, '/');
+            return new URL(rel, dirBase).href;
+        } catch (_) {
+            return '';
+        }
+    }
+    return '';
+}
+
 function timeAgo(date) {
     const diffMs = Date.now() - date.getTime();
     const diffMin = Math.floor(diffMs / 60000);
@@ -1872,6 +2010,12 @@ function parseSheetDate(tsVal) {
 function normalizeStoreId_(raw) {
     if (raw == null || String(raw).trim() === '') return '';
     return String(raw).replace(/\s+/g, ' ').trim();
+}
+
+/** タイムテーブル store_id。カンマ区切りで複数ピンを強調できる */
+function parseStoreIdList_(raw) {
+    if (raw == null || String(raw).trim() === '') return [];
+    return String(raw).split(/[,、]/).map(normalizeStoreId_).filter(Boolean);
 }
 
 /** posts シート: createdAt 列が空・✔・TRUE のときも受け付ける */
@@ -2032,17 +2176,9 @@ const DataModule = {
             // hidden 列が false/"FALSE" なら非表示
             if (row.c[COLS.HIDDEN]?.v === false || row.c[COLS.HIDDEN]?.v === 'FALSE') return acc;
 
-            let url = row.c[COLS.URL]?.v || '';
-            if (typeof url !== 'string' || !/^https?:\/\//i.test(url.trim())) url = '';
-            else url = normalizeImageUrl(url);
-
-            let url2 = row.c[COLS.IMAGE_URL_2]?.v || '';
-            if (typeof url2 !== 'string' || !/^https?:\/\//i.test(url2.trim())) url2 = '';
-            else url2 = normalizeImageUrl(url2);
-
-            let url3 = row.c[COLS.IMAGE_URL_3]?.v || '';
-            if (typeof url3 !== 'string' || !/^https?:\/\//i.test(url3.trim())) url3 = '';
-            else url3 = normalizeImageUrl(url3);
+            let url = resolveSheetMediaUrl(row.c[COLS.URL]?.v || '');
+            let url2 = resolveSheetMediaUrl(row.c[COLS.IMAGE_URL_2]?.v || '');
+            let url3 = resolveSheetMediaUrl(row.c[COLS.IMAGE_URL_3]?.v || '');
 
             const storeIdRaw = row.c[COLS.STORE_ID]?.v;
             const storeId = storeIdRaw != null && String(storeIdRaw).trim() !== ''
@@ -2203,6 +2339,113 @@ const FixedModule = {
 window._gvizFixedCb = function(json) {
     clearTimeout(FixedModule._fetchTimeout);
     FixedModule.onLoaded(json);
+};
+
+// ================================================================
+// ScheduleModule — フェス全体タイムテーブル（event_schedule シート）
+// ================================================================
+const ScheduleModule = {
+
+    _fetchTimeout: null,
+
+    fetch() {
+        const sheetName = CONFIG.EVENTS_SHEET;
+        if (!sheetName || !CONFIG.SHEET_ID) return;
+
+        const cbName = '_gvizScheduleCb';
+        const oldScript = document.getElementById('gviz-schedule-script');
+        if (oldScript) oldScript.remove();
+
+        clearTimeout(this._fetchTimeout);
+        this._fetchTimeout = setTimeout(() => {
+            console.warn('[ScheduleModule] タイムアウト');
+        }, 12000);
+
+        const sheetParam = encodeURIComponent(sheetName);
+        const script = document.createElement('script');
+        script.id = 'gviz-schedule-script';
+        script.src = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=responseHandler:${cbName}&sheet=${sheetParam}&_=${Date.now()}`;
+        script.onerror = () => {
+            clearTimeout(this._fetchTimeout);
+            console.warn('[ScheduleModule] スケジュールシート取得失敗');
+        };
+        document.body.appendChild(script);
+    },
+
+    onLoaded(json) {
+        clearTimeout(this._fetchTimeout);
+        const items = this._parse(json);
+        const hash = JSON.stringify(items);
+        if (hash === State.lastScheduleHash) return;
+        State.lastScheduleHash = hash;
+        State.scheduleItems = items;
+        if (document.getElementById('timetable-overlay')?.classList.contains('open')) {
+            UIModule._renderTimetable();
+        }
+    },
+
+    _parse(json) {
+        const COL = CONFIG.EVENT_SCHEDULE_COLS || {};
+        const cell = (row, key) => {
+            const idx = COL[key];
+            if (idx == null) return '';
+            const v = row.c[idx]?.v;
+            return v != null ? String(v).trim() : '';
+        };
+        if (!json?.table?.rows) return [];
+
+        const items = json.table.rows.reduce((acc, row) => {
+            if (!row?.c) return acc;
+            if (row.c[COL.HIDDEN]?.v === false || row.c[COL.HIDDEN]?.v === 'FALSE') return acc;
+
+            const title = cell(row, 'TITLE');
+            const performer = cell(row, 'PERFORMER');
+            const description = cell(row, 'DESCRIPTION');
+            const venue = cell(row, 'VENUE');
+            const eventDate = cell(row, 'EVENT_DATE');
+            const startTime = cell(row, 'START_TIME');
+            const endTime = cell(row, 'END_TIME');
+            const sortRaw = cell(row, 'SORT_ORDER');
+            const sortOrder = sortRaw !== '' && Number.isFinite(Number(sortRaw)) ? Number(sortRaw) : 9999;
+            const imageUrl = resolveSheetMediaUrl(cell(row, 'IMAGE_URL'));
+            const storeId = cell(row, 'STORE_ID');
+
+            if (!title && !performer && !description && !startTime) return acc;
+
+            acc.push({
+                startTime, endTime, title, performer, description, venue,
+                eventDate, sortOrder, imageUrl, storeId
+            });
+            return acc;
+        }, []);
+
+        items.sort((a, b) => {
+            const d = String(a.eventDate || '').localeCompare(String(b.eventDate || ''));
+            if (d) return d;
+            if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+            return ScheduleModule._timeToMinutes(a.startTime) - ScheduleModule._timeToMinutes(b.startTime);
+        });
+        return items;
+    },
+
+    _timeToMinutes(t) {
+        if (!t) return 9999;
+        const m = String(t).trim().match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return 9999;
+        return Number(m[1]) * 60 + Number(m[2]);
+    },
+
+    startPolling() {
+        const ms = CONFIG.EVENT_SCHEDULE_POLL_INTERVAL;
+        if (!ms || !CONFIG.EVENTS_SHEET) return;
+        clearInterval(State.schedulePollInterval);
+        State.schedulePollInterval = setInterval(() => ScheduleModule.fetch(), ms);
+    }
+};
+
+window._gvizScheduleCb = function(json) {
+    clearTimeout(ScheduleModule._fetchTimeout);
+    ScheduleModule.onLoaded(json);
 };
 
 // ================================================================
@@ -3079,6 +3322,8 @@ const MapModule = {
             DataModule.startPolling();
             FixedModule.fetch();
             FixedModule.startPolling();
+            ScheduleModule.fetch();
+            ScheduleModule.startPolling();
             this._startGPS();
 
             Promise.resolve(this._addIllustrationMap())
@@ -3375,6 +3620,32 @@ const MapModule = {
         });
     },
 
+    fitToSpots(spots) {
+        const valid = (spots || []).filter(s => {
+            const c = s?.coords;
+            return Array.isArray(c) && c.length >= 2
+                && Number.isFinite(Number(c[0])) && Number.isFinite(Number(c[1]));
+        });
+        if (!valid.length || !this._map) return;
+        if (valid.length === 1) {
+            this.flyTo(valid[0]);
+            return;
+        }
+        const padding = State.isPC
+            ? { top: 50, bottom: 50, left: 50, right: 50 }
+            : { top: 50, bottom: 240, left: 20, right: 20 };
+        const cam = this._cameraLock();
+        const bounds = new mapboxgl.LngLatBounds();
+        valid.forEach(s => bounds.extend(s.coords));
+        this._map.fitBounds(bounds, {
+            padding,
+            maxZoom: Number(CONFIG.CLUSTER?.flyToZoom) || 17.5,
+            bearing: cam.bearing,
+            pitch: cam.pitch,
+            duration: 800
+        });
+    },
+
     flyToUser() {
         if (State.userLocationMarker) {
             const flyZoom = Number(CONFIG.CLUSTER?.flyToZoom);
@@ -3426,10 +3697,14 @@ const UIModule = {
         // データに初めて現れたカテゴリは既定で表示ON（ユーザーが外した既存カテゴリはそのまま）
         App._mergeNewFilterCategories(cats);
 
-        // カテゴリチェックボックス
+        const hint = document.createElement('p');
+        hint.className = 'find-hint';
+        hint.textContent = t('findHint');
+        list.appendChild(hint);
+
         const catTitle = document.createElement('div');
         catTitle.className = 'ctrl-panel-title';
-        catTitle.textContent = 'カテゴリ';
+        catTitle.textContent = t('filter');
         list.appendChild(catTitle);
 
         const allLabel = document.createElement('label');
@@ -3445,11 +3720,14 @@ const UIModule = {
             const item = document.createElement('label');
             item.className = 'filter-item';
             const checked = App._selectedCategories.has(cat) ? 'checked' : '';
+            const groups = CONFIG.FIND_GROUPS || [];
+            const group = groups.find(g => g.category === cat);
+            const label = group && group.label ? group.label : cat;
             item.innerHTML = `<input type="checkbox" data-cat="${cat}" ${checked}
                 onchange="App.toggleCategory('${cat}', this.checked)">
                 <span class="checkmark"></span>
                 <span class="cat-icon"><i class="fas ${getCategoryIcon(cat)}"></i></span>
-                <span>${cat}</span>`;
+                <span>${label}</span>`;
             list.appendChild(item);
         });
 
@@ -3620,6 +3898,35 @@ const UIModule = {
         this.syncMarkerDisplay();
     },
 
+    applyPinEmphasis() {
+        const emphasis = State.emphasisStoreIds || [];
+        const cats = App._allFilterCategoryKeys();
+        const allOn = !emphasis.length
+            && cats.length > 0
+            && cats.every(c => App._selectedCategories.has(c))
+            && State.selectedTags.size === 0;
+        const mark = (spot) => {
+            const el = document.getElementById(`marker-${spot.id}`);
+            if (!el) return;
+            el.classList.remove('marker-dim', 'marker-focus');
+            if (allOn) return;
+            let ok;
+            if (emphasis.length) {
+                ok = emphasis.indexOf(normalizeStoreId_(spot.storeId)) !== -1;
+            } else {
+                const cat = App._effectiveFilterCategorySpot(spot);
+                ok = App._selectedCategories.has(cat);
+                if (ok && State.selectedTags.size > 0) {
+                    const spotTags = (State.language === 'ja' ? spot.tags : spot.tags_en) || [];
+                    ok = spotTags.some(tag => State.selectedTags.has(tag));
+                }
+            }
+            el.classList.add(ok ? 'marker-focus' : 'marker-dim');
+        };
+        State.allSpots.forEach(mark);
+        State.fixedSpots.forEach(mark);
+    },
+
     /** ズームに応じてクラスタ（代表写真＋件数）／個別 HTML マーカーを切替 */
     syncMarkerDisplay() {
         const spots = State.filteredSpots || [];
@@ -3651,6 +3958,8 @@ const UIModule = {
         if (CONFIG.ENABLE_STANDALONE_LIVE_PINS) {
             this._appendStandaloneLiveMarkers(spotsVisible);
         }
+
+        this.applyPinEmphasis();
 
         if (State.currentSpot) {
             document.getElementById(`marker-${State.currentSpot.id}`)?.classList.add('active');
@@ -3792,6 +4101,11 @@ const UIModule = {
             e.stopPropagation();
             document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('active'));
             el.classList.add('active');
+            const noModal = (CONFIG.FIXED_PIN_NO_MODAL || []).indexOf(spot.category) !== -1;
+            if (noModal) {
+                if (MapModule.flyTo) MapModule.flyTo(spot);
+                return;
+            }
             UIModule.openModal(spot.id);
         });
 
@@ -4177,6 +4491,132 @@ const UIModule = {
             document.getElementById('news-list-overlay').classList.remove('open');
     },
 
+    // ---- タイムテーブル ----
+
+    openTimetable() {
+        this.closeParkInfo(true);
+        this.closePanelOverlay();
+        document.getElementById('timetable-title').innerText = t('timetableTitle');
+        const ttBtn = document.getElementById('timetable-btn-text');
+        if (ttBtn) ttBtn.innerText = t('timetableTitle');
+        this._renderTimetable();
+        const el = document.getElementById('timetable-overlay');
+        el.classList.add('open');
+        el.classList.remove('is-full');
+        this._setActiveTab('tab-timetable');
+        if (!State.scheduleItems.length) ScheduleModule.fetch();
+    },
+
+    closeTimetable(e, force) {
+        if (force || e?.target?.id === 'timetable-overlay') {
+            const el = document.getElementById('timetable-overlay');
+            el.classList.remove('open', 'is-full');
+            this._setActiveTab('tab-filter');
+        }
+    },
+
+    toggleTimetableHeight() {
+        document.getElementById('timetable-overlay')?.classList.toggle('is-full');
+    },
+
+    openParkInfo() {
+        this.closeTimetable(null, true);
+        this.closePanelOverlay();
+        const info = CONFIG.PARK_INFO || {};
+        document.getElementById('park-sheet-title').innerText = t('parkTitle');
+        const parkBtn = document.getElementById('park-btn-text');
+        if (parkBtn) parkBtn.innerText = t('parkTitle');
+        const body = document.getElementById('park-content');
+        const tel = (info.phone || '').replace(/[^\d+]/g, '');
+        body.innerHTML = `<div class="park-info">
+            <p><strong>${escapeHtml(info.title || '')}</strong></p>
+            <p>${escapeHtml(info.date || '')}</p>
+            <p>${escapeHtml(info.hours || '')}</p>
+            <p>${escapeHtml(info.note || '')}</p>
+            <p>${escapeHtml(info.contact || '')}</p>
+            ${info.phone ? `<p><a href="tel:${escapeHtml(tel)}">${escapeHtml(info.phone)}</a></p>` : ''}
+        </div>`;
+        const el = document.getElementById('park-overlay');
+        el.classList.add('open');
+        el.classList.remove('is-full');
+        this._setActiveTab('tab-park');
+    },
+
+    closeParkInfo(force) {
+        if (!force) return;
+        document.getElementById('park-overlay')?.classList.remove('open', 'is-full');
+    },
+
+    toggleParkHeight() {
+        document.getElementById('park-overlay')?.classList.toggle('is-full');
+    },
+
+    _findSpotByStoreId(storeId) {
+        const key = normalizeStoreId_(storeId);
+        if (!key) return null;
+        return State.allSpots.find(s => s.storeId === key)
+            || State.fixedSpots.find(s => s.storeId === key)
+            || null;
+    },
+
+    _focusScheduleItem(item) {
+        const ids = parseStoreIdList_(item.storeId);
+        if (!ids.length) return;
+        State.emphasisStoreIds = ids;
+        const sheet = document.getElementById('timetable-overlay');
+        if (sheet) sheet.classList.remove('is-full');
+        const spots = ids.map(id => this._findSpotByStoreId(id)).filter(Boolean);
+        this.applyPinEmphasis();
+        if (spots.length === 1) {
+            const spot = spots[0];
+            const noModal = (CONFIG.FIXED_PIN_NO_MODAL || []).indexOf(spot.category) !== -1;
+            App.selectSpot(spot);
+            if (!noModal) this.openModal(spot.id);
+            return;
+        }
+        if (spots.length > 1 && MapModule.fitToSpots) MapModule.fitToSpots(spots);
+    },
+
+    _formatTimetableTime(item) {
+        const s = item.startTime || '';
+        const e = item.endTime || '';
+        if (s && e) return `${s}–${e}`;
+        if (s) return `${s}〜`;
+        return '—';
+    },
+
+    _renderTimetable() {
+        const body = document.getElementById('timetable-content');
+        if (!body) return;
+        body.innerHTML = '';
+        const items = State.scheduleItems || [];
+        if (!items.length) {
+            body.innerHTML = `<p style="padding:16px;color:#888;text-align:center;">${escapeHtml(t('timetableEmpty'))}</p>`;
+            return;
+        }
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'timetable-item';
+            if (parseStoreIdList_(item.storeId).length) {
+                div.addEventListener('click', () => this._focusScheduleItem(item));
+            }
+            const titleHtml = item.title
+                ? `<div class="timetable-title">${escapeHtml(item.title)}</div>` : '';
+            const performerHtml = item.performer
+                ? `<div class="timetable-performer">${escapeHtml(item.performer)}</div>` : '';
+            const descHtml = item.description
+                ? `<div class="timetable-desc">${escapeHtml(item.description)}</div>` : '';
+            const venueHtml = item.venue
+                ? `<div class="timetable-venue">${escapeHtml(t('timetableVenue'))}: ${escapeHtml(item.venue)}</div>` : '';
+            div.innerHTML = `
+                <div class="timetable-time">${escapeHtml(this._formatTimetableTime(item))}</div>
+                <div class="timetable-main">
+                    ${titleHtml}${performerHtml}${descHtml}${venueHtml}
+                </div>`;
+            body.appendChild(div);
+        });
+    },
+
     // ---- 詳細モーダル ----
 
     openModal(spotId) {
@@ -4185,7 +4625,10 @@ const UIModule = {
         if (!spot) return;
         State.currentSpot = spot;
 
-        const images = [spot.imageUrl, spot.imageUrl2, spot.imageUrl3].filter(Boolean);
+        const catRaw = spot.category != null ? String(spot.category).trim() : '';
+        const isKidsPlay = catRaw === 'kids_play';
+        let images = [spot.imageUrl, spot.imageUrl2, spot.imageUrl3].filter(Boolean);
+        if (isKidsPlay) images = [spot.imageUrl].filter(Boolean);
         UIModule._buildSlider(images, spot.emoji);
 
         document.getElementById('modal-cat').innerText   = val(spot, 'category');
@@ -4260,7 +4703,11 @@ const UIModule = {
             urlWrap.style.display = 'flex';
             urlLink.href = urlNorm;
             const labelEl = document.getElementById('modal-url-label');
-            if (labelEl) labelEl.textContent = t('urlLink');
+            const cat = val(spot, 'category');
+            if (labelEl) {
+                labelEl.textContent = (cat === 'ws_indoor' && t('applyLink'))
+                    ? t('applyLink') : t('urlLink');
+            }
         } else if (urlWrap) {
             urlWrap.style.display = 'none';
             if (urlLink) urlLink.removeAttribute('href');
@@ -4304,6 +4751,32 @@ const UIModule = {
         } else if (newsWrap) {
             newsWrap.style.display = 'none';
             if (newsEl) newsEl.textContent = '';
+        }
+
+        const sponsorWrap = document.getElementById('modal-sponsor-wrap');
+        const sponsorLogoEl = document.getElementById('modal-sponsor-logo');
+        const sponsorNameEl = document.getElementById('modal-sponsor-name');
+        const sponsorLabelEl = document.getElementById('modal-sponsor-label');
+        const sponsorName = isKidsPlay ? (spot.tagline || '').trim() : '';
+        const sponsorLogo = isKidsPlay && spot.imageUrl3 ? spot.imageUrl3 : '';
+        if (sponsorWrap && sponsorLogoEl && sponsorNameEl) {
+            if (isKidsPlay && (sponsorName || sponsorLogo)) {
+                sponsorWrap.style.display = 'flex';
+                if (sponsorLabelEl) sponsorLabelEl.textContent = t('supportedBy');
+                sponsorNameEl.textContent = sponsorName;
+                if (sponsorLogo) {
+                    sponsorLogoEl.src = sponsorLogo;
+                    sponsorLogoEl.alt = sponsorName || '';
+                    sponsorLogoEl.style.display = 'inline-block';
+                } else {
+                    sponsorLogoEl.removeAttribute('src');
+                    sponsorLogoEl.style.display = 'none';
+                }
+            } else {
+                sponsorWrap.style.display = 'none';
+                sponsorLogoEl.removeAttribute('src');
+                sponsorNameEl.textContent = '';
+            }
         }
 
         document.getElementById('btn-nav-text').innerText = t('go');
@@ -4475,14 +4948,32 @@ const App = {
 
     _allFilterCategoryKeys() {
         const catSet = new Set();
+        (CONFIG.FIND_GROUPS || []).forEach(g => {
+            if (g.category) catSet.add(g.category);
+        });
         State.allSpots.forEach(s => {
             const c = val(s, 'category');
             if (c) catSet.add(c);
             if (s.livePost && s.livePost.category) catSet.add(s.livePost.category);
         });
+        State.fixedSpots.forEach(s => {
+            const c = val(s, 'category');
+            if (c) catSet.add(c);
+        });
         (State.liveStandalonePosts || []).forEach(lp => {
             if (lp.category) catSet.add(lp.category);
         });
+        const groups = CONFIG.FIND_GROUPS || [];
+        if (groups.length) {
+            const ordered = [];
+            groups.forEach(g => {
+                if (g.category && catSet.has(g.category)) {
+                    ordered.push(g.category);
+                    catSet.delete(g.category);
+                }
+            });
+            return ordered.concat([...catSet].sort((a, b) => String(a).localeCompare(String(b), 'ja')));
+        }
         return [...catSet].sort((a, b) => String(a).localeCompare(String(b), 'ja'));
     },
 
@@ -4529,6 +5020,7 @@ const App = {
         State.fixedMarkers = [];
         const fixedVisible = LayerManager.getDefs().fixed?.visible !== false;
         State.fixedSpots.forEach(spot => UIModule._appendFixedHtmlMarker(spot, fixedVisible));
+        UIModule.applyPinEmphasis();
     },
 
     // データ取得完了後のメイン処理
@@ -4601,6 +5093,10 @@ const App = {
         document.getElementById('layer-btn-text').innerText  = t('layers');
         const homeText = document.getElementById('home-btn-text');
         if (homeText) homeText.innerText = t('map');
+        const ttText = document.getElementById('timetable-btn-text');
+        if (ttText) ttText.innerText = t('timetableTitle');
+        const parkText = document.getElementById('park-btn-text');
+        if (parkText) parkText.innerText = t('parkTitle');
 
         UIModule.generateFilters(State.allSpots);
         UIModule.renderLayerPanel();
@@ -4610,18 +5106,9 @@ const App = {
     },
 
     _applyFilters() {
-        const targets = State.allSpots.filter(s => {
-            const cat = this._effectiveFilterCategorySpot(s);
-            if (!this._selectedCategories.has(cat)) return false;
-            // タグフィルタ: 選択タグがあれば、スポットが少なくとも1つ一致するもののみ表示
-            if (State.selectedTags.size > 0) {
-                const spotTags = (State.language === 'ja' ? s.tags : s.tags_en) || [];
-                if (!spotTags.some(tag => State.selectedTags.has(tag))) return false;
-            }
-            return true;
-        });
-        UIModule.updateMarkers(targets);
-        UIModule.renderCards(targets);
+        UIModule.updateMarkers(State.allSpots);
+        UIModule.applyPinEmphasis();
+        UIModule.renderCards(State.allSpots);
     },
 
     // ---- 公開メソッド (HTML onclick から参照) ----
@@ -4637,10 +5124,12 @@ const App = {
             this._selectedCategories.add(c);
         });
         State.selectedTags.clear();
+        State.emphasisStoreIds = [];
         this._refreshUI();
     },
 
     toggleCategory(category, isChecked) {
+        State.emphasisStoreIds = [];
         if (isChecked) this._selectedCategories.add(category);
         else           this._selectedCategories.delete(category);
 
@@ -4651,6 +5140,7 @@ const App = {
     },
 
     toggleAll(isChecked) {
+        State.emphasisStoreIds = [];
         document.querySelectorAll('#filter-list input').forEach(input => {
             input.checked = isChecked;
             const cat = input.getAttribute('data-cat');
@@ -4689,6 +5179,7 @@ const App = {
 
     // タグフィルタのトグル（カード・モーダルのチップとパネルから共有）
     toggleTagFilter(tag) {
+        State.emphasisStoreIds = [];
         if (State.selectedTags.has(tag)) {
             State.selectedTags.delete(tag);
         } else {
