@@ -8,7 +8,8 @@
     <!-- エリア設定: secrets → config → config.local（任意）。新エリアは config.js のみ編集 -->
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
     <script src="line-contract.js"></script>
-    <script src="config.js"></script>
+    <!-- 四隅変更時は ?v= を更新（GitHub Pages の config.js 長期キャッシュ対策） -->
+    <script src="config.js?v=20261024-qgis-corners"></script>
     <script src="config.local.js" onerror="void 0"></script>
     <script>
         (function () {
@@ -5065,8 +5066,47 @@ const App = {
         // posts データを店舗スポットへマージ
         PostsModule._attachLiveToSpots();
         this._refreshUI();
+        this._focusMapWhenReady();
         // マーカー描画後に外部サイトからのディープリンク（?spot=store_id）を処理。
         this._handleDeepLink();
+    },
+
+    /** データ取得後、初期カメラ確定後にピンが画面内に入るよう寄せる */
+    _focusMapWhenReady() {
+        if (!State.allSpots.length && !State.fixedSpots.length) return;
+        const focus = () => {
+            const spots = State.allSpots.filter(s =>
+                LayerManager.getDefs().spots.visible
+                && App._selectedCategories.has(App._effectiveFilterCategorySpot(s))
+            );
+            if (spots.length === 1) MapModule.flyTo(spots[0]);
+            else if (spots.length > 1) MapModule.fitBounds();
+            else if (State.fixedSpots.length === 1) MapModule.flyTo(State.fixedSpots[0]);
+            else if (State.fixedSpots.length > 1) {
+                const bounds = new mapboxgl.LngLatBounds();
+                State.fixedSpots.forEach(s => bounds.extend(s.coords));
+                const cam = MapModule._cameraLock();
+                MapModule._map.fitBounds(bounds, {
+                    padding: State.isPC
+                        ? { top: 80, bottom: 80, left: 50, right: 50 }
+                        : { top: 80, bottom: 260, left: 30, right: 30 },
+                    bearing: cam.bearing,
+                    pitch: cam.pitch,
+                    duration: 600
+                });
+            }
+        };
+        if (MapModule._initViewApplied) {
+            focus();
+            return;
+        }
+        let tries = 0;
+        const timer = setInterval(() => {
+            if (MapModule._initViewApplied || ++tries > 200) {
+                clearInterval(timer);
+                focus();
+            }
+        }, 50);
     },
 
     /**
