@@ -1,7 +1,9 @@
 # shikine-map リポジトリの作成手順
 
-敷根公園フェス用のコードは `cursor/shikine-map-init-a646` ブランチにあります。  
-GitHub で **新規リポジトリ `shikine-map`** を作り、そこへ `main` として反映してください。
+> **2026-10 更新:** リポジトリ `Stand-koike/shikine-map` は作成済みです。  
+> 以降は [MOBILE_LAUNCH_CHECKLIST.md](MOBILE_LAUNCH_CHECKLIST.md)（Pages・Secrets）と [SHEET_SETUP_SHIKINE.md](SHEET_SETUP_SHIKINE.md) を進めてください。
+
+以下は、当時ブランチから新規リポジトリへ push した手順の**記録**です。
 
 ---
 

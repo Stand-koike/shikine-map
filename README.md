@@ -32,7 +32,7 @@ LINE からの最新情報はマップ／店舗モーダルに出す想定です
 | 屋内事務所 | [web/docs/OFFICE_SHIKINE.md](web/docs/OFFICE_SHIKINE.md) |
 | スプレッドシート | [web/docs/SHEET_SETUP_SHIKINE.md](web/docs/SHEET_SETUP_SHIKINE.md) |
 | イラスト地図 | `web/map.webp` に差し替え、`config.js` の `MAP_IMAGE.coordinates` を更新 |
-| 本番公開 | GitHub Secrets（Mapbox・シート ID）→ Pages |
+| 本番公開 | [モバイル向けチェックリスト](web/docs/MOBILE_LAUNCH_CHECKLIST.md)（Pages・Secrets） |
 
 地図・シートが無い状態では、プレースホルダー地図と仮座標（敷根公園付近）で UI のみ確認できます。
 
@@ -56,6 +56,8 @@ npx --yes serve web
 | [web/docs/SHEET_SETUP_SHIKINE.md](web/docs/SHEET_SETUP_SHIKINE.md) | スプレッドシートの作り方 |
 | [web/docs/REPO_SETUP_SHIKINE.md](web/docs/REPO_SETUP_SHIKINE.md) | **shikine-map** リポジトリの作成（完了済みの場合は参照用） |
 | [web/docs/AREA_MIGRATION_GUIDE.md](web/docs/AREA_MIGRATION_GUIDE.md) | **新エリア**を同機能で立ち上げる手順 |
+| [web/docs/FEATURE_BACKLOG.md](web/docs/FEATURE_BACKLOG.md) | **やりたい機能・UI** の整理（チャット追記可） |
+| [web/docs/MOBILE_LAUNCH_CHECKLIST.md](web/docs/MOBILE_LAUNCH_CHECKLIST.md) | スマホから進める公開手順 |
 | [SECURITY.md](SECURITY.md) | 秘密情報の扱い |
 
 ---
