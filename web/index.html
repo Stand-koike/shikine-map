@@ -4087,7 +4087,7 @@ const UIModule = {
         State.emphasisStoreIds = [];
         this._setActiveTab('tab-play');
         this.expandCardsSheetIfCollapsed();
-        UIModule.renderCards(State.allSpots);
+        UIModule.renderCards(App.getPlayTabCardSpots());
         this.applyPinEmphasis();
     },
 
@@ -5107,17 +5107,22 @@ const App = {
     _seenFilterCategories: new Set(),
     _postsInitialized: false,
 
-    getFoodAreaSpots() {
+    isFoodAreaSpot(spot) {
         const ids = (CONFIG.FOOD_AREA_STORE_IDS || []).map(normalizeStoreId_).filter(Boolean);
-        if (ids.length) {
-            return State.allSpots.filter(s => ids.indexOf(normalizeStoreId_(s.storeId)) !== -1);
-        }
-        return State.allSpots.filter(s => {
-            const cat = this._effectiveFilterCategorySpot(s);
-            if (cat === 'フードエリア') return true;
-            const sid = normalizeStoreId_(s.storeId);
-            return sid && sid.indexOf('food_') === 0;
-        });
+        const sid = normalizeStoreId_(spot.storeId);
+        if (ids.length && sid && ids.indexOf(sid) !== -1) return true;
+        const cat = this._effectiveFilterCategorySpot(spot);
+        if (cat === 'フードエリア') return true;
+        return !!(sid && sid.indexOf('food_') === 0);
+    },
+
+    getFoodAreaSpots() {
+        return State.allSpots.filter(s => this.isFoodAreaSpot(s));
+    },
+
+    /** 遊ぶタブの下部カード（飲食店を除く店舗マスタ） */
+    getPlayTabCardSpots() {
+        return State.allSpots.filter(s => !this.isFoodAreaSpot(s));
     },
 
     /** 絞り込み判定: 店舗は LIVE 投稿のカテゴリを優先、なければマスタのカテゴリ */
@@ -5341,6 +5346,8 @@ const App = {
         if (State.bottomNavMode === 'food') {
             const foodSpots = this.getFoodAreaSpots();
             UIModule.renderCards(foodSpots.length ? foodSpots : State.allSpots);
+        } else if (State.bottomNavMode === 'play') {
+            UIModule.renderCards(this.getPlayTabCardSpots());
         } else {
             UIModule.renderCards(State.allSpots);
         }
