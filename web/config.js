@@ -107,6 +107,12 @@
         },
         /** 丸型ピン（店舗同型）の中に FIXED_PIN_ICON_BY_STORE_ID の画像を表示 */
         FIXED_PIN_CIRCULAR_LOGO_STORE_IDS: ['kids_wakuwaku'],
+        /** モーダルに Instagram リンクを出す store_id */
+        INSTAGRAM_BY_STORE_ID: {
+            food_12kitchen: 'https://www.instagram.com/12kitchen_shimoda/?utm_source=ig_web_button_share_sheet',
+            food_makimaki: 'https://www.instagram.com/izushimodamakimaki/?utm_source=ig_web_button_share_sheet',
+            kids_wakuwaku: 'https://www.instagram.com/shimoda.babyandkids/?utm_source=ig_web_button_share_sheet'
+        },
         /** 固定ピン PNG 辺（基準 36px の 150%） */
         FIXED_PIN_SIZE: 54,
         /** 店舗ピン外枠（基準 60/44px の 80%）— CSS と揃える */
@@ -166,7 +172,7 @@
 
         TRANSLATIONS: {
             ja: {
-                all: 'すべて', go: 'Google Mapsで見る', coupon: 'クーポンを使う',
+                all: 'すべて', instagram: 'Instagram', coupon: 'クーポンを使う',
                 loading: '読み込み中...', noData: 'データなし', filter: '探す',
                 layers: 'レイヤー', newsListTitle: 'お知らせ', updating: 'データ更新中...',
                 hours: '営業時間', tags: 'タグ', allTags: 'すべてのタグ', map: 'マップ',
@@ -181,7 +187,7 @@
                 findHint: 'ピンは消さず、対象を大きく表示します'
             },
             en: {
-                all: 'All', go: 'Open in Google Maps', coupon: 'Coupon',
+                all: 'All', instagram: 'Instagram', coupon: 'Coupon',
                 loading: 'Loading...', noData: 'No Data', filter: 'Find',
                 layers: 'Layers', newsListTitle: 'News', updating: 'Updating...',
                 hours: 'Hours', tags: 'Tags', allTags: 'All Tags', map: 'Map',
