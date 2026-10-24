@@ -107,7 +107,8 @@
             },
             /** 画面上の見え方調整（px）— 左コントロール／下カードシート分 */
             initViewOffset: [28, 6],
-            initViewOffsetMobile: [0, 52],
+            /** スマホ: 下カードシート分の Y と、初期表示中心をやや左寄せする X */
+            initViewOffsetMobile: [-40, 52],
             maxBounds: [
                 [minLng - padLng, minLat - padLat],
                 [maxLng + padLng, maxLat + padLat]
