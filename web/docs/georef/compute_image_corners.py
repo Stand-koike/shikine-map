@@ -39,8 +39,12 @@ def main() -> None:
         (ln for ln in POINTS.read_text(encoding="utf-8").splitlines() if ln.startswith("#CRS:")),
         "",
     )
-    m = re.search(r'ID\["EPSG",(\d+)\]\]', crs_line)
-    epsg = int(m.group(1)) if m else 6676
+    epsg_ids = [int(x) for x in re.findall(r'ID\["EPSG",(\d+)\]\]', crs_line)]
+    epsg = 6676
+    for code in reversed(epsg_ids):
+        if 6670 <= code <= 6687 or code in (30161, 30168, 2451):
+            epsg = code
+            break
 
     A = np.array([[sx, sy, 1] for _mx, _my, sx, sy in gcps])
     coef_x = np.linalg.lstsq(A, [g[0] for g in gcps], rcond=None)[0]
