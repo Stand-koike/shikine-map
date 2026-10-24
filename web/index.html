@@ -9,7 +9,7 @@
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
     <script src="line-contract.js"></script>
     <!-- 四隅変更時は ?v= を更新（GitHub Pages の config.js 長期キャッシュ対策） -->
-    <script src="config.js?v=20261024-bearing-100"></script>
+    <script src="config.js?v=20261024-pin-official-v2"></script>
     <script src="config.local.js" onerror="void 0"></script>
     <script>
         (function () {
@@ -916,7 +916,8 @@
             box-sizing: border-box;
         }
         .card-thumb--duo {
-            flex: 1 1 0;
+            flex: 0 1 47%;
+            max-width: 47%;
             min-width: 0;
             width: auto;
             height: 100%;
@@ -2188,6 +2189,21 @@ function normalizeStoreId_(raw) {
     return String(raw).replace(/\s+/g, ' ').trim();
 }
 
+/** QGIS 公式座標で store_id 一致ピンを上書き（スプレッドシートが古いときも位置を揃える） */
+function applyPinCoordinateOverride(spot) {
+    if (!spot) return spot;
+    const table = CONFIG.PIN_COORDINATES_BY_STORE_ID;
+    if (!table) return spot;
+    const sid = normalizeStoreId_(spot.storeId);
+    if (!sid || !table[sid]) return spot;
+    const o = table[sid];
+    const lat = Number(o.lat);
+    const lng = Number(o.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return spot;
+    spot.coords = [lng, lat];
+    return spot;
+}
+
 /** タイムテーブル store_id。カンマ区切りで複数ピンを強調できる */
 function parseStoreIdList_(raw) {
     if (raw == null || String(raw).trim() === '') return [];
@@ -2398,7 +2414,7 @@ const DataModule = {
             const tagline   = row.c[COLS.TAGLINE]?.v   != null ? String(row.c[COLS.TAGLINE].v).trim()   : '';
             const taglineEn = row.c[COLS.TAGLINE_EN]?.v != null ? String(row.c[COLS.TAGLINE_EN].v).trim() : '';
 
-            acc.push({
+            acc.push(applyPinCoordinateOverride({
                 id,
                 storeId,
                 coords:     [lngN, latN],
@@ -2430,7 +2446,7 @@ const DataModule = {
                 hours_en:   hoursEn,
                 tagline,
                 tagline_en: taglineEn
-            });
+            }));
             return acc;
         }, []);
     },
@@ -2515,7 +2531,7 @@ const FixedModule = {
     },
 
     _parse(json) {
-        return DataModule._parse(json).map((spot, i) => ({
+        return DataModule._parse(json).map((spot, i) => applyPinCoordinateOverride({
             ...spot,
             id: spot.storeId
                 ? `fixed_spot_${spot.storeId.replace(/\s+/g, '_')}`
