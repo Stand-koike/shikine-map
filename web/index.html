@@ -202,8 +202,13 @@
         @media (max-width: 767px) {
             .bottom-tab-home { display: none !important; }
             #tab-layer, #tab-lang { display: none !important; }
+            .ctrl-desktop-filter { display: none !important; }
         }
-        .bottom-tab-timetable, .bottom-tab-park { display: flex; }
+        @media (min-width: 768px) {
+            .bottom-tab-food, .bottom-tab-play { display: none !important; }
+        }
+        .bottom-tab-food, .bottom-tab-play, .bottom-tab-timetable, .bottom-tab-park { display: flex; }
+        .ctrl-btn .tab-emoji { font-size: 18px; line-height: 1; }
         .custom-marker.marker-dim {
             opacity: 0.38;
             transform: scale(0.72);
@@ -1528,8 +1533,8 @@
         <i class="fas fa-map"></i> <span id="home-btn-text">マップ</span>
     </button>
 
-    <!-- 探す -->
-    <div class="ctrl-panel-wrapper">
+    <!-- 探す（PC） / モバイルは 🍴・遊ぶ -->
+    <div class="ctrl-panel-wrapper ctrl-desktop-filter">
         <button class="ctrl-btn primary" id="tab-filter" onclick="UIModule.onTabTap('filter')">
             <i class="fas fa-search"></i> <span id="filter-btn-text">探す</span>
         </button>
@@ -1538,6 +1543,16 @@
             <div id="filter-list"></div>
         </div>
     </div>
+
+    <button class="ctrl-btn bottom-tab-food" id="tab-food" type="button"
+        onclick="UIModule.onMobileFoodTab()" aria-label="飲食エリア">
+        <span class="tab-emoji" aria-hidden="true">🍴</span>
+    </button>
+
+    <button class="ctrl-btn bottom-tab-play" id="tab-play" type="button"
+        onclick="UIModule.onMobilePlayTab()" aria-label="遊ぶ">
+        <i class="fas fa-child" aria-hidden="true"></i> <span id="play-btn-text">遊ぶ</span>
+    </button>
 
     <!-- レイヤー管理 -->
     <div class="ctrl-panel-wrapper">
@@ -1558,7 +1573,7 @@
 
     <button class="ctrl-btn bottom-tab-park" id="tab-park" type="button"
         onclick="UIModule.openParkInfo()" aria-label="公園">
-        <i class="fas fa-tree"></i> <span id="park-btn-text">公園</span>
+        <i class="fas fa-tree"></i> <span id="park-btn-text">公園🌲</span>
     </button>
 
     <button class="ctrl-btn" id="tab-lang" onclick="UIModule.onTabTap('lang')">
@@ -1845,7 +1860,9 @@ const State = {
     scheduleItems:         [],
     lastScheduleHash:      '',
     schedulePollInterval:  null,
-    emphasisStoreIds:      []
+    emphasisStoreIds:      [],
+    /** モバイル下タブ: null | 'food' | 'play' */
+    bottomNavMode:         null
 };
 
 // ================================================================
@@ -3937,6 +3954,7 @@ const UIModule = {
             this.closePanelOverlay();
             this._setActiveTab('tab-home');
         }
+        State.bottomNavMode = null;
         State.currentSpot = null;
         document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('active'));
         document.querySelectorAll('.slide-card').forEach(c => c.classList.remove('active'));
@@ -3945,6 +3963,8 @@ const UIModule = {
         this.closeCoupon(null, true);
 
         if (!State.isPC) {
+            UIModule.renderCards(State.allSpots);
+            this.applyPinEmphasis();
             const sheetWasCollapsed = document.body.classList.contains('cards-sheet-collapsed');
             this.expandCardsSheetIfCollapsed();
             const delay = sheetWasCollapsed ? 400 : 50;
@@ -3994,15 +4014,35 @@ const UIModule = {
 
     applyPinEmphasis() {
         const emphasis = State.emphasisStoreIds || [];
+        const navMode = State.bottomNavMode;
         const cats = App._allFilterCategoryKeys();
-        const allOn = !emphasis.length
+        const allOn = !navMode
+            && !emphasis.length
             && cats.length > 0
             && cats.every(c => App._selectedCategories.has(c))
             && State.selectedTags.size === 0;
+        const isFoodSpot = (spot) => {
+            const cat = App._effectiveFilterCategorySpot(spot);
+            if (cat === 'フードエリア') return true;
+            const sid = normalizeStoreId_(spot.storeId);
+            return sid && sid.indexOf('food_') === 0;
+        };
+        const isPlayDimSpot = (spot) => {
+            const cat = App._effectiveFilterCategorySpot(spot);
+            return cat === 'フードエリア' || cat === 'toilet';
+        };
         const mark = (spot) => {
             const el = document.getElementById(`marker-${spot.id}`);
             if (!el) return;
             el.classList.remove('marker-dim', 'marker-focus');
+            if (navMode === 'food') {
+                el.classList.add(isFoodSpot(spot) ? 'marker-focus' : 'marker-dim');
+                return;
+            }
+            if (navMode === 'play') {
+                el.classList.add(isPlayDimSpot(spot) ? 'marker-dim' : 'marker-focus');
+                return;
+            }
             if (allOn) return;
             let ok;
             if (emphasis.length) {
@@ -4019,6 +4059,36 @@ const UIModule = {
         };
         State.allSpots.forEach(mark);
         State.fixedSpots.forEach(mark);
+    },
+
+    onMobileFoodTab() {
+        if (State.isPC) return;
+        this.closeTimetable(null, true);
+        this.closeParkInfo(true);
+        this.closePanelOverlay();
+        State.bottomNavMode = 'food';
+        State.emphasisStoreIds = [];
+        this._setActiveTab('tab-food');
+        this.expandCardsSheetIfCollapsed();
+        const foodSpots = App.getFoodAreaSpots();
+        UIModule.renderCards(foodSpots.length ? foodSpots : State.allSpots);
+        this.applyPinEmphasis();
+        if (foodSpots.length && MapModule.fitToSpots) {
+            setTimeout(() => MapModule.fitToSpots(foodSpots), 80);
+        }
+    },
+
+    onMobilePlayTab() {
+        if (State.isPC) return;
+        this.closeTimetable(null, true);
+        this.closeParkInfo(true);
+        this.closePanelOverlay();
+        State.bottomNavMode = 'play';
+        State.emphasisStoreIds = [];
+        this._setActiveTab('tab-play');
+        this.expandCardsSheetIfCollapsed();
+        UIModule.renderCards(State.allSpots);
+        this.applyPinEmphasis();
     },
 
     /** ズームに応じてクラスタ（代表写真＋件数）／個別 HTML マーカーを切替 */
@@ -4588,6 +4658,7 @@ const UIModule = {
     // ---- タイムテーブル ----
 
     openTimetable() {
+        State.bottomNavMode = null;
         this.closeParkInfo(true);
         this.closePanelOverlay();
         document.getElementById('timetable-title').innerText = t('timetableTitle');
@@ -4605,7 +4676,13 @@ const UIModule = {
         if (force || e?.target?.id === 'timetable-overlay') {
             const el = document.getElementById('timetable-overlay');
             el.classList.remove('open', 'is-full');
-            this._setActiveTab('tab-filter');
+            if (!State.isPC) {
+                document.querySelectorAll('#controls-container .ctrl-btn').forEach(btn => {
+                    btn.classList.remove('tab-active');
+                });
+            } else {
+                this._setActiveTab('tab-filter');
+            }
         }
     },
 
@@ -4614,6 +4691,7 @@ const UIModule = {
     },
 
     openParkInfo() {
+        State.bottomNavMode = null;
         this.closeTimetable(null, true);
         this.closePanelOverlay();
         const info = CONFIG.PARK_INFO || {};
@@ -4656,6 +4734,7 @@ const UIModule = {
     _focusScheduleItem(item) {
         const ids = parseStoreIdList_(item.storeId);
         if (!ids.length) return;
+        State.bottomNavMode = null;
         State.emphasisStoreIds = ids;
         const sheet = document.getElementById('timetable-overlay');
         if (sheet) sheet.classList.remove('is-full');
@@ -5028,6 +5107,19 @@ const App = {
     _seenFilterCategories: new Set(),
     _postsInitialized: false,
 
+    getFoodAreaSpots() {
+        const ids = (CONFIG.FOOD_AREA_STORE_IDS || []).map(normalizeStoreId_).filter(Boolean);
+        if (ids.length) {
+            return State.allSpots.filter(s => ids.indexOf(normalizeStoreId_(s.storeId)) !== -1);
+        }
+        return State.allSpots.filter(s => {
+            const cat = this._effectiveFilterCategorySpot(s);
+            if (cat === 'フードエリア') return true;
+            const sid = normalizeStoreId_(s.storeId);
+            return sid && sid.indexOf('food_') === 0;
+        });
+    },
+
     /** 絞り込み判定: 店舗は LIVE 投稿のカテゴリを優先、なければマスタのカテゴリ */
     _effectiveFilterCategorySpot(spot) {
         if (spot.livePost && spot.livePost.category) return spot.livePost.category;
@@ -5233,6 +5325,8 @@ const App = {
         if (ttText) ttText.innerText = t('timetableTitle');
         const parkText = document.getElementById('park-btn-text');
         if (parkText) parkText.innerText = t('parkTitle');
+        const playText = document.getElementById('play-btn-text');
+        if (playText) playText.innerText = t('playTab');
 
         UIModule.generateFilters(State.allSpots);
         UIModule.renderLayerPanel();
@@ -5244,7 +5338,12 @@ const App = {
     _applyFilters() {
         UIModule.updateMarkers(State.allSpots);
         UIModule.applyPinEmphasis();
-        UIModule.renderCards(State.allSpots);
+        if (State.bottomNavMode === 'food') {
+            const foodSpots = this.getFoodAreaSpots();
+            UIModule.renderCards(foodSpots.length ? foodSpots : State.allSpots);
+        } else {
+            UIModule.renderCards(State.allSpots);
+        }
     },
 
     // ---- 公開メソッド (HTML onclick から参照) ----
@@ -5265,6 +5364,7 @@ const App = {
     },
 
     toggleCategory(category, isChecked) {
+        State.bottomNavMode = null;
         State.emphasisStoreIds = [];
         if (isChecked) this._selectedCategories.add(category);
         else           this._selectedCategories.delete(category);
@@ -5276,6 +5376,7 @@ const App = {
     },
 
     toggleAll(isChecked) {
+        State.bottomNavMode = null;
         State.emphasisStoreIds = [];
         document.querySelectorAll('#filter-list input').forEach(input => {
             input.checked = isChecked;
@@ -5315,6 +5416,7 @@ const App = {
 
     // タグフィルタのトグル（カード・モーダルのチップとパネルから共有）
     toggleTagFilter(tag) {
+        State.bottomNavMode = null;
         State.emphasisStoreIds = [];
         if (State.selectedTags.has(tag)) {
             State.selectedTags.delete(tag);
