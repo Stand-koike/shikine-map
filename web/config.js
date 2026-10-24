@@ -19,15 +19,20 @@
      * 1024×724 PNG（map.webp）の四隅 WGS84。運営確認の座標（QGIS / 現地合わせ）。
      * 順序: NW, NE, SE, SW（Mapbox image source）。@see web/docs/MAP_GEOTIFF_SHIKINE.md
      */
-    /** @see web/docs/sheets/4point.csv（イラスト四隅・運営提供 2026-10-24） */
-    var MAP_NW = [138.929911760854, 34.6826754148076];
-    var MAP_NE = [138.932967922088, 34.6836381261816];
-    var MAP_SE = [138.934405075491, 34.6814521543504];
-    var MAP_SW = [138.931436651862, 34.6802178061394];
-    var minLng = 138.929911760854;
-    var maxLng = 138.934405075491;
-    var minLat = 34.6802178061394;
-    var maxLat = 34.6836381261816;
+    /**
+     * map.webp 外枠四隅の WGS84（Mapbox image source: NW, NE, SE, SW）。
+     * QGIS Georeferencer の GCP 地上座標（4point.csv）とは別 — GCP が画像角以外のピクセルにあるため、
+     * park.png.points のアフィンから (0,0)(W,0)(W,H)(0,H) を計算した値を使う。
+     * @see web/docs/georef/park.png.points / compute_image_corners.py
+     */
+    var MAP_NW = [138.92984332047556, 34.68345933759301];
+    var MAP_NE = [138.9333648636672, 34.68383855342811];
+    var MAP_SE = [138.9332889535992, 34.68554841081278];
+    var MAP_SW = [138.9297673382443, 34.68516919342476];
+    var minLng = Math.min(MAP_NW[0], MAP_NE[0], MAP_SE[0], MAP_SW[0]);
+    var maxLng = Math.max(MAP_NW[0], MAP_NE[0], MAP_SE[0], MAP_SW[0]);
+    var minLat = Math.min(MAP_NW[1], MAP_NE[1], MAP_SE[1], MAP_SW[1]);
+    var maxLat = Math.max(MAP_NW[1], MAP_NE[1], MAP_SE[1], MAP_SW[1]);
     var PARK_LNG = (minLng + maxLng) / 2;
     var PARK_LAT = (minLat + maxLat) / 2;
     var padLng = (maxLng - minLng) * 0.2;
@@ -60,7 +65,7 @@
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: '20261024-4point',
+            cacheVersion: '20261024-georef-points',
             solarLat:   PARK_LAT,
             solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',
