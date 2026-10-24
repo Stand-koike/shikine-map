@@ -35,6 +35,20 @@
     var padLng = (maxLng - minLng) * 0.2;
     var padLat = (maxLat - minLat) * 0.2;
 
+    /** 初期 fit 用に四隅を中心へ少し縮め、公園全体を画面いっぱいに近づける */
+    function scaleMapCoords(coords, factor) {
+        var lng = 0, lat = 0, i;
+        for (i = 0; i < coords.length; i++) {
+            lng += coords[i][0];
+            lat += coords[i][1];
+        }
+        lng /= coords.length;
+        lat /= coords.length;
+        return coords.map(function (pt) {
+            return [lng + (pt[0] - lng) * factor, lat + (pt[1] - lat) * factor];
+        });
+    }
+
     window.__SHIMODA_MAP_CONFIG__ = {
         APP_TITLE: '敷根公園フェスマップ',
 
@@ -72,13 +86,28 @@
             lngOffset:  0,
             center:    [PARK_LNG, PARK_LAT],
             initCenter: [PARK_LNG, PARK_LAT],
-            initZoom:  18.0,
-            initZoomMobile: 17.6,
+            initZoom:  19.2,
+            initZoomMobile: 18.85,
             initCenterMobile: [PARK_LNG, PARK_LAT],
-            minZoom:   17.2,
-            minZoomMobile: 16.9,
+            minZoom:   16.6,
+            minZoomMobile: 16.4,
             maxZoom:   20,
             initUseFitBounds: true,
+            /** 起動時 fit の対象（中心寄り・イラスト四隅は画面外にはみ出す） */
+            initViewCoordinates: scaleMapCoords(mapCoords, 0.68),
+            /** fitBounds 初期表示のズーム上限 */
+            initFitMaxZoom: 19.85,
+            initViewPadding: {
+                top: 40,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                mobileTop: 36,
+                mobileBottom: 150
+            },
+            /** 画面上の見え方調整（px）— 左コントロール／下カードシート分 */
+            initViewOffset: [28, 6],
+            initViewOffsetMobile: [0, 52],
             maxBounds: [
                 [minLng - padLng, minLat - padLat],
                 [maxLng + padLng, maxLat + padLat]
