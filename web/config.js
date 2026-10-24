@@ -25,16 +25,12 @@
      * park.png.points のアフィンから (0,0)(W,0)(W,H)(0,H) を計算した値を使う。
      * @see web/docs/georef/park.png.points / compute_image_corners.py
      */
-    var georef = (typeof window !== 'undefined' && window.__SHIKINE_MAP_GEOREF__)
-        ? window.__SHIKINE_MAP_GEOREF__
-        : null;
+    /* 未ワープの map.webp。QGIS と同じ位置合わせは EPSG:4326 GeoTIFF が来るまで行わない。 */
     var MAP_NW = [138.93004574694812, 34.68014377395333];
     var MAP_NE = [138.9344634492879, 34.68061954815408];
     var MAP_SE = [138.9343196484562, 34.68385877093156];
     var MAP_SW = [138.92990182365062, 34.68338309824799];
-    var mapCoords = (georef && georef.coordinates && georef.coordinates.length === 4)
-        ? georef.coordinates
-        : [MAP_NW, MAP_NE, MAP_SE, MAP_SW];
+    var mapCoords = [MAP_NW, MAP_NE, MAP_SE, MAP_SW];
     var minLng = Math.min(mapCoords[0][0], mapCoords[1][0], mapCoords[2][0], mapCoords[3][0]);
     var maxLng = Math.max(mapCoords[0][0], mapCoords[1][0], mapCoords[2][0], mapCoords[3][0]);
     var minLat = Math.min(mapCoords[0][1], mapCoords[1][1], mapCoords[2][1], mapCoords[3][1]);
@@ -67,11 +63,11 @@
         COLORS: { DEFAULT: '#2E7D32', RED: '#FF5252', YELLOW: '#FFCA28' },
 
         MAP_IMAGE: {
-            url:        (georef && georef.imageUrl) ? georef.imageUrl : 'map.webp',
+            url:        'map.webp',
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: (georef && georef.cacheVersion) ? georef.cacheVersion : '20261024-pitch0',
+            cacheVersion: '20261024-restore-map',
             solarLat:   PARK_LAT,
             solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',

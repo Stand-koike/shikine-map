@@ -29,13 +29,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install GDAL and build georeferenced map (QGIS .points と同じワープ)
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq gdal-bin python3-pip
-          pip install -q numpy pyproj
-          python3 web/scripts/build_georef_map.py
-
       - name: Generate web/secrets.local.js from repository secrets
         env:
           MAPBOX_TOKEN: ${{ secrets.MAPBOX_PUBLIC_TOKEN }}
