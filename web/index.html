@@ -858,6 +858,17 @@
             width: 100%; height: 100%; display: block;
             object-fit: contain; object-position: center center;
         }
+        .slide-card--flyer .card-image-area {
+            height: 200px;
+            min-height: 168px;
+            background: #fff;
+        }
+        @media (max-width: 767px) {
+            .slide-card--flyer .card-image-area {
+                height: 188px;
+                min-height: 156px;
+            }
+        }
         .card-emoji-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 48px; background: var(--color-secondary); }
         /* 画像上：各フィールドの有無のみ（テキスト本文は出さない） */
         .card-image-indicators {
@@ -4541,10 +4552,11 @@ const UIModule = {
             return;
         }
         spots.forEach(spot => {
+            const actionSpot = App.resolveSpotFromCard(spot);
             const card = document.createElement('div');
-            card.className = 'slide-card';
+            card.className = 'slide-card' + (spot._playFlyerCard ? ' slide-card--flyer' : '');
             card.id = `card-${spot.id}`;
-            card.onclick = () => App.selectSpot(spot);
+            card.onclick = () => App.selectSpot(actionSpot);
 
             const thumbHtml = spot.imageUrl
                 ? `<img src="${spot.imageUrl}" class="card-thumb"
@@ -4602,7 +4614,7 @@ const UIModule = {
                 arrowEl.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    UIModule.openModal(spot.id);
+                    UIModule.openModal(actionSpot.id);
                 });
             }
             container.appendChild(card);
@@ -4611,7 +4623,10 @@ const UIModule = {
 
     highlightCard(spot) {
         document.querySelectorAll('.slide-card').forEach(c => c.classList.remove('active'));
-        const target = document.getElementById(`card-${spot.id}`);
+        let target = document.getElementById(`card-${spot.id}`);
+        if (!target) {
+            target = document.querySelector(`[id^="card-${spot.id}__flyer_"]`);
+        }
         if (!target) return;
         target.classList.add('active');
         const container = document.getElementById('slide-panel');
@@ -5319,9 +5334,45 @@ const App = {
         return State.allSpots.filter(s => this.isFoodAreaSpot(s));
     },
 
-    /** 遊ぶタブの下部カード（飲食店を除く店舗マスタ） */
+    resolveSpotFromCard(spot) {
+        if (!spot || !spot._playFlyerBaseId) return spot;
+        return State.fixedSpots.find(s => s.id === spot._playFlyerBaseId)
+            || State.allSpots.find(s => s.id === spot._playFlyerBaseId)
+            || spot;
+    },
+
+    /** 遊ぶタブ: 固定マスタのフライヤー（image_url / image_url_2）を横並びカード */
     getPlayTabCardSpots() {
-        return State.allSpots.filter(s => !this.isFoodAreaSpot(s));
+        const order = CONFIG.PLAY_TAB_STORE_IDS || [];
+        const findFixed = (storeId) => State.fixedSpots.find(s =>
+            normalizeStoreId_(s.storeId) === normalizeStoreId_(storeId));
+        const cards = [];
+
+        const pushFlyerCards = (spot) => {
+            if (!spot) return;
+            const cat = this._effectiveFilterCategorySpot(spot);
+            if (cat === 'toilet' || cat === 'フードエリア' || this.isFoodAreaSpot(spot)) return;
+            const flyerUrls = [spot.imageUrl, spot.imageUrl2].filter(Boolean);
+            if (!flyerUrls.length) return;
+            flyerUrls.forEach((url, idx) => {
+                cards.push({
+                    ...spot,
+                    id: `${spot.id}__flyer_${idx}`,
+                    _playFlyerCard: true,
+                    _playFlyerBaseId: spot.id,
+                    imageUrl: url,
+                    imageUrl2: '',
+                    imageUrl3: ''
+                });
+            });
+        };
+
+        if (order.length) {
+            order.forEach(storeId => pushFlyerCards(findFixed(storeId)));
+        } else {
+            State.fixedSpots.forEach(spot => pushFlyerCards(spot));
+        }
+        return cards;
     },
 
     /** 絞り込み判定: 店舗は LIVE 投稿のカテゴリを優先、なければマスタのカテゴリ */
@@ -5411,6 +5462,9 @@ const App = {
         const fixedVisible = LayerManager.getDefs().fixed?.visible !== false;
         State.fixedSpots.forEach(spot => UIModule._appendFixedHtmlMarker(spot, fixedVisible));
         UIModule.applyPinEmphasis();
+        if (State.bottomNavMode === 'play') {
+            UIModule.renderCards(this.getPlayTabCardSpots());
+        }
         if (State.fixedSpots.length > 0) App._focusMapWhenReady();
     },
 

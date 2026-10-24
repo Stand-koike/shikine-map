@@ -170,6 +170,15 @@
             'food_makimaki', 'food_12kitchen', 'food_takahashi_toriniku', 'food_shimano'
         ],
 
+        /** 遊ぶタブのフライヤーカード表示順（固定マスタ store_id。image_url / image_url_2 を横並び） */
+        PLAY_TAB_STORE_IDS: [
+            'kids_wakuwaku',
+            'ws_kids_core',
+            'pool_shikine',
+            'office_nature_walk',
+            'stage_outdoor'
+        ],
+
         FIND_GROUPS: [
             { category: 'フードエリア', label: '飲食' },
             { category: 'toilet', label: 'トイレ' },
