@@ -92,9 +92,8 @@
                 [minLng - padLng, minLat - padLat],
                 [maxLng + padLng, maxLat + padLat]
             ],
-            /* QGIS と同じ真上視。pitch 45° はイラストとピンが視覚的にずれて見える */
             bearing:   0,
-            pitch:     0
+            pitch:     45
         },
 
         POLL_INTERVAL: 30000,
