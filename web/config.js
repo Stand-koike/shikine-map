@@ -95,20 +95,25 @@
             initUseFitBounds: true,
             /** 起動時 fit の対象（中心寄り・イラスト四隅は画面外にはみ出す） */
             initViewCoordinates: scaleMapCoords(mapCoords, 0.68),
+            /** スマホのみさらに寄せ、マップ外の余白を出さない */
+            initViewCoordinatesMobile: scaleMapCoords(mapCoords, 0.52),
             /** fitBounds 初期表示のズーム上限 */
             initFitMaxZoom: 19.85,
+            initFitMaxZoomMobile: 20,
             initViewPadding: {
                 top: 40,
                 bottom: 0,
                 left: 0,
                 right: 0,
-                mobileTop: 36,
-                mobileBottom: 150
+                mobileTop: 28,
+                mobileBottom: 140,
+                mobileLeft: 0,
+                mobileRight: 44
             },
             /** 画面上の見え方調整（px）— 左コントロール／下カードシート分 */
             initViewOffset: [28, 6],
-            /** スマホ: 下カードシート分の Y と、初期表示中心をやや左寄せする X */
-            initViewOffsetMobile: [-40, 52],
+            /** スマホ: 下カードシート分の Y と、左側（テニスコート寄り）が見える X */
+            initViewOffsetMobile: [-72, 44],
             maxBounds: [
                 [minLng - padLng, minLat - padLat],
                 [maxLng + padLng, maxLat + padLat]
