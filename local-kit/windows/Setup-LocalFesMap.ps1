@@ -15,9 +15,16 @@ param(
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 
+if (-not (Test-Path -LiteralPath $BasePath)) {
+    New-Item -ItemType Directory -Force -Path $BasePath | Out-Null
+}
+
 $RepoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-if (-not (Test-Path (Join-Path $RepoRoot "web\index.html"))) {
-    $RepoRoot = Get-Location
+if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "web\index.html"))) {
+    $RepoRoot = Join-Path $BasePath "shikine-map"
+}
+if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "web\index.html"))) {
+    throw "shikine-map not found. Clone to: $BasePath\shikine-map"
 }
 
 $dirs = @(
