@@ -9,7 +9,7 @@
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
     <script src="line-contract.js"></script>
     <!-- 四隅変更時は ?v= を更新（GitHub Pages の config.js 長期キャッシュ対策） -->
-    <script src="config.js?v=20261024-mobile-init-left"></script>
+    <script src="config.js?v=20261024-mobile-init-v2"></script>
     <script src="config.local.js" onerror="void 0"></script>
     <script>
         (function () {
@@ -3247,7 +3247,13 @@ const MapModule = {
     },
 
     _initViewBoundsPair() {
-        const coords = CONFIG.MAP_IMAGE.initViewCoordinates;
+        const cfg = CONFIG.MAP_IMAGE;
+        let coords = cfg.initViewCoordinates;
+        if (!State.isPC
+            && Array.isArray(cfg.initViewCoordinatesMobile)
+            && cfg.initViewCoordinatesMobile.length >= 4) {
+            coords = cfg.initViewCoordinatesMobile;
+        }
         if (!Array.isArray(coords) || coords.length < 4) return null;
         const [[w, n], , [e, s]] = coords;
         return [[w, s], [e, n]];
@@ -3286,8 +3292,8 @@ const MapModule = {
         return {
             top:    p.mobileTop != null ? p.mobileTop : (p.top != null ? p.top : 60),
             bottom: p.mobileBottom != null ? p.mobileBottom : 160,
-            left:   p.left   != null ? p.left   : 30,
-            right:  p.right  != null ? p.right  : 30
+            left:   p.mobileLeft != null ? p.mobileLeft : (p.left != null ? p.left : 30),
+            right:  p.mobileRight != null ? p.mobileRight : (p.right != null ? p.right : 30)
         };
     },
 
@@ -3469,7 +3475,11 @@ const MapModule = {
         const cfg = CONFIG.MAP_IMAGE;
         const cam = this._cameraLock();
         const bounds = this._initViewBoundsPair() || this._illustrationBoundsPair();
-        const cap = Number(cfg.initFitMaxZoom);
+        let cap = Number(cfg.initFitMaxZoom);
+        if (!State.isPC) {
+            const mobileCap = Number(cfg.initFitMaxZoomMobile);
+            if (Number.isFinite(mobileCap) && mobileCap > 0) cap = mobileCap;
+        }
         const maxZoom = Number.isFinite(cap) ? cap : (cfg.maxZoom ?? 22);
         this._map.fitBounds(bounds, {
             padding:  this._initViewPadding(),
@@ -3479,6 +3489,40 @@ const MapModule = {
             duration: opts.duration != null ? opts.duration : 0,
             maxZoom
         });
+    },
+
+    /** スマホ: fitBounds が maxZoom で止まったあと、寄せ・左下寄りパンを追い込む */
+    _applyInitMobilePostFit(opts = {}) {
+        if (State.isPC || !this._map) return;
+        const cfg = CONFIG.MAP_IMAGE || {};
+        const tweak = cfg.initMobilePostFit;
+        if (!tweak || typeof tweak !== 'object') return;
+        const cam = this._cameraLock();
+        const maxZ = cfg.maxZoom ?? 22;
+        const center = this._map.getCenter();
+        const dLng = Number(tweak.centerLng);
+        const dLat = Number(tweak.centerLat);
+        if (Number.isFinite(dLng)) center.lng += dLng;
+        if (Number.isFinite(dLat)) center.lat += dLat;
+        const extra = Number(tweak.extraZoom);
+        const zoom = Math.min(maxZ, this._map.getZoom() + (Number.isFinite(extra) ? extra : 0));
+        const offset = this._resolveInitViewOffset(cfg);
+        const duration = opts.duration != null ? opts.duration : 0;
+        const camera = {
+            center, zoom,
+            bearing: cam.bearing,
+            pitch: cam.pitch,
+            offset
+        };
+        if (duration > 0) this._map.easeTo({ ...camera, duration });
+        else this._map.jumpTo(camera);
+    },
+
+    _applyInitCamera(opts = {}) {
+        const cfg = CONFIG.MAP_IMAGE || {};
+        if (cfg.initUseFitBounds) this._applyInitFitBounds(opts);
+        else this._applyInitView(opts);
+        this._applyInitMobilePostFit(opts);
     },
 
     /** 起動時表示を適用（initCenter + initZoom で直接指定） */
@@ -3506,8 +3550,7 @@ const MapModule = {
         this._map.resize();
         this._applyMapConstraints({ recalcMinZoom: true });
         const cfg = CONFIG.MAP_IMAGE || {};
-        if (cfg.initUseFitBounds) this._applyInitFitBounds(opts);
-        else this._applyInitView(opts);
+        this._applyInitCamera(opts);
         this._initViewApplied = true;
     },
 
@@ -3529,9 +3572,7 @@ const MapModule = {
                     UIModule.syncMarkerDisplay();
                 }
             });
-            const cfg = CONFIG.MAP_IMAGE || {};
-            if (cfg.initUseFitBounds) this._applyInitFitBounds({ duration: 800 });
-            else this._applyInitView({ duration: 800 });
+            this._applyInitCamera({ duration: 800 });
         }, 0);
     },
 

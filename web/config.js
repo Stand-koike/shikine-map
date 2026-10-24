@@ -35,6 +35,9 @@
     var padLng = (maxLng - minLng) * 0.2;
     var padLat = (maxLat - minLat) * 0.2;
 
+    var spanLng = maxLng - minLng;
+    var spanLat = maxLat - minLat;
+
     /** 初期 fit 用に四隅を中心へ少し縮め、公園全体を画面いっぱいに近づける */
     function scaleMapCoords(coords, factor) {
         var lng = 0, lat = 0, i;
@@ -48,6 +51,19 @@
             return [lng + (pt[0] - lng) * factor, lat + (pt[1] - lat) * factor];
         });
     }
+
+    /** 任意の基準点の周りに縮める（スマホで左下＝テニスコート寄りを見せる） */
+    function scaleMapCoordsAround(coords, factor, anchorLng, anchorLat) {
+        return coords.map(function (pt) {
+            return [
+                anchorLng + (pt[0] - anchorLng) * factor,
+                anchorLat + (pt[1] - anchorLat) * factor
+            ];
+        });
+    }
+
+    var mobileInitAnchorLng = minLng + spanLng * 0.30;
+    var mobileInitAnchorLat = minLat + spanLat * 0.26;
 
     window.__SHIMODA_MAP_CONFIG__ = {
         APP_TITLE: '敷根公園フェスマップ',
@@ -95,20 +111,36 @@
             initUseFitBounds: true,
             /** 起動時 fit の対象（中心寄り・イラスト四隅は画面外にはみ出す） */
             initViewCoordinates: scaleMapCoords(mapCoords, 0.68),
+            /** スマホ: 左下寄りを基準に強く寄せる（fit が maxZoom で頭打ちでも効く） */
+            initViewCoordinatesMobile: scaleMapCoordsAround(
+                mapCoords, 0.36, mobileInitAnchorLng, mobileInitAnchorLat
+            ),
             /** fitBounds 初期表示のズーム上限 */
             initFitMaxZoom: 19.85,
+            initFitMaxZoomMobile: 20,
             initViewPadding: {
                 top: 40,
                 bottom: 0,
                 left: 0,
                 right: 0,
-                mobileTop: 36,
-                mobileBottom: 150
+                mobileTop: 22,
+                mobileBottom: 118,
+                mobileLeft: 0,
+                mobileRight: 52
             },
             /** 画面上の見え方調整（px）— 左コントロール／下カードシート分 */
             initViewOffset: [28, 6],
-            /** スマホ: 下カードシート分の Y と、初期表示中心をやや左寄せする X */
-            initViewOffsetMobile: [-40, 52],
+            /** スマホ: 下シート分 Y、テニスコート側が入る X */
+            initViewOffsetMobile: [-98, 36],
+            /**
+             * fitBounds 後の追い込み（maxZoom 上限で fit だけでは変わらない分）
+             * centerLng/Lat は度単位のパン（西・南がマイナス）
+             */
+            initMobilePostFit: {
+                extraZoom: 0.62,
+                centerLng: -spanLng * 0.11,
+                centerLat: -spanLat * 0.09
+            },
             maxBounds: [
                 [minLng - padLng, minLat - padLat],
                 [maxLng + padLng, maxLat + padLat]
