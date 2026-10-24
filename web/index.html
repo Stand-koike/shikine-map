@@ -125,7 +125,9 @@
         @media (max-width: 767px) {
             .controls-container {
                 top: auto; bottom: 0; left: 0; right: 0;
-                flex-direction: row; gap: 0;
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0;
                 align-items: stretch;
                 background: #fff;
                 padding: 0;
@@ -135,8 +137,8 @@
                 z-index: 220;
                 border-top: 1px solid rgba(0,0,0,0.06);
             }
-            .controls-container > * {
-                flex: 1; min-width: 0;
+            .controls-container > *:not(.bottom-tab-food):not(.bottom-tab-play):not(.bottom-tab-timetable):not(.bottom-tab-park) {
+                display: none !important;
             }
         }
 
@@ -201,7 +203,6 @@
         .bottom-tab-home { display: none; }
         @media (max-width: 767px) {
             .bottom-tab-home { display: none !important; }
-            #tab-layer, #tab-lang { display: none !important; }
             .ctrl-desktop-filter { display: none !important; }
         }
         @media (min-width: 768px) {
@@ -209,6 +210,40 @@
         }
         .bottom-tab-food, .bottom-tab-play, .bottom-tab-timetable, .bottom-tab-park { display: flex; }
         .ctrl-btn .tab-emoji { font-size: 18px; line-height: 1; }
+        @media (max-width: 767px) {
+            .bottom-tab-food, .bottom-tab-play, .bottom-tab-timetable, .bottom-tab-park {
+                display: flex !important;
+                min-width: 0;
+            }
+            .bottom-tab-food .bottom-tab-icon,
+            .bottom-tab-play .bottom-tab-icon,
+            .bottom-tab-timetable .bottom-tab-icon,
+            .bottom-tab-park .bottom-tab-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 22px;
+                line-height: 1;
+            }
+            .bottom-tab-food .bottom-tab-label,
+            .bottom-tab-play .bottom-tab-label,
+            .bottom-tab-timetable .bottom-tab-label,
+            .bottom-tab-park .bottom-tab-label {
+                display: block;
+                width: 100%;
+                font-size: 10px;
+                line-height: 1.2;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                padding: 0 2px;
+            }
+            .bottom-tab-timetable .bottom-tab-label {
+                font-size: 9px;
+                letter-spacing: -0.02em;
+            }
+        }
         .custom-marker.marker-dim {
             opacity: 0.38;
             transform: scale(0.72);
@@ -1644,12 +1679,14 @@
 
     <button class="ctrl-btn bottom-tab-food" id="tab-food" type="button"
         onclick="UIModule.onMobileFoodTab()" aria-label="飲食エリア">
-        <span class="tab-emoji" aria-hidden="true">🍴</span>
+        <span class="bottom-tab-icon"><span class="tab-emoji" aria-hidden="true">🍴</span></span>
+        <span class="bottom-tab-label" aria-hidden="true">&nbsp;</span>
     </button>
 
     <button class="ctrl-btn bottom-tab-play" id="tab-play" type="button"
         onclick="UIModule.onMobilePlayTab()" aria-label="遊ぶ">
-        <i class="fas fa-child" aria-hidden="true"></i> <span id="play-btn-text">遊ぶ</span>
+        <span class="bottom-tab-icon"><i class="fas fa-child" aria-hidden="true"></i></span>
+        <span class="bottom-tab-label" id="play-btn-text">遊ぶ</span>
     </button>
 
     <!-- レイヤー管理 -->
@@ -1666,12 +1703,14 @@
     <!-- 言語切替 -->
     <button class="ctrl-btn bottom-tab-timetable" id="tab-timetable" type="button"
         onclick="UIModule.openTimetable()" aria-label="タイムテーブル">
-        <i class="fas fa-calendar-alt"></i> <span id="timetable-btn-text">タイムテーブル</span>
+        <span class="bottom-tab-icon"><i class="fas fa-calendar-alt" aria-hidden="true"></i></span>
+        <span class="bottom-tab-label" id="timetable-btn-text">タイムテーブル</span>
     </button>
 
     <button class="ctrl-btn bottom-tab-park" id="tab-park" type="button"
         onclick="UIModule.openParkInfo()" aria-label="公園">
-        <i class="fas fa-tree"></i> <span id="park-btn-text">公園🌲</span>
+        <span class="bottom-tab-icon"><i class="fas fa-tree" aria-hidden="true"></i></span>
+        <span class="bottom-tab-label" id="park-btn-text">公園</span>
     </button>
 
     <button class="ctrl-btn" id="tab-lang" onclick="UIModule.onTabTap('lang')">

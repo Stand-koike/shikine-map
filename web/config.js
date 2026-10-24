@@ -275,7 +275,7 @@
                 kawaraView: '最新情報を見る',
                 kawaraTitle: '最新情報',
                 supportedBy: 'Supported by',
-                parkTitle: '公園🌲',
+                parkTitle: '公園',
                 playTab: '遊ぶ',
                 findHint: 'ピンは消さず、対象を大きく表示します'
             },
