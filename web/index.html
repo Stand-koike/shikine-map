@@ -3000,14 +3000,24 @@ const MapModule = {
     _lastContainerSize:           null,
     _initViewApplied:             false,
 
+    _allowBearingDrag() {
+        const cfg = CONFIG.MAP_IMAGE || {};
+        return cfg.allowBearingDrag !== false;
+    },
+
     _cameraLock() {
         const cfg = CONFIG.MAP_IMAGE || {};
-        const bearing = this._lockedBearing != null
-            ? this._lockedBearing
-            : (Number.isFinite(Number(cfg.bearing)) ? Number(cfg.bearing) : -90);
         const pitch = this._lockedPitch != null
             ? this._lockedPitch
             : (Number.isFinite(Number(cfg.pitch)) ? Number(cfg.pitch) : 45);
+        let bearing;
+        if (this._allowBearingDrag() && this._map) {
+            bearing = this._map.getBearing();
+        } else if (this._lockedBearing != null) {
+            bearing = this._lockedBearing;
+        } else {
+            bearing = Number.isFinite(Number(cfg.bearing)) ? Number(cfg.bearing) : -90;
+        }
         return { bearing, pitch };
     },
 
@@ -3138,36 +3148,46 @@ const MapModule = {
         return this._initViewOffset();
     },
 
-    /** maxBounds・回転禁止・ピッチ固定。recalcMinZoom=true のときだけ minZoom を fit 再計算 */
+    /** maxBounds・ピッチ固定。allowBearingDrag 時は右クリック／2本指で方位回転可 */
     _applyMapConstraints(opts = {}) {
         const map = this._map;
         const cfg = CONFIG.MAP_IMAGE;
         if (!map || !cfg) return;
 
         const cam = this._cameraLock();
-        this._lockedBearing = cam.bearing;
         this._lockedPitch = cam.pitch;
+        if (!this._allowBearingDrag()) {
+            this._lockedBearing = cam.bearing;
+        }
 
         if (cfg.maxBounds) map.setMaxBounds(cfg.maxBounds);
-        if (map.dragRotate) map.dragRotate.disable();
-        if (map.touchZoomRotate) map.touchZoomRotate.disableRotation();
+        if (this._allowBearingDrag()) {
+            if (map.dragRotate) map.dragRotate.enable();
+            if (map.touchZoomRotate) map.touchZoomRotate.enableRotation();
+        } else {
+            if (map.dragRotate) map.dragRotate.disable();
+            if (map.touchZoomRotate) map.touchZoomRotate.disableRotation();
+        }
         map.setMinPitch(cam.pitch);
         map.setMaxPitch(cam.pitch);
 
         if (!this._orientationLocked) {
             this._orientationLocked = true;
-            const snapOrientation = () => {
+            const snapPitchOnly = () => {
                 if (!this._map) return;
-                const lock = this._cameraLock();
-                if (Math.abs(this._map.getBearing() - lock.bearing) > 0.05) {
-                    this._map.setBearing(lock.bearing);
-                }
-                if (Math.abs(this._map.getPitch() - lock.pitch) > 0.05) {
-                    this._map.setPitch(lock.pitch);
+                const pitch = this._lockedPitch != null
+                    ? this._lockedPitch
+                    : (Number.isFinite(Number(cfg.pitch)) ? Number(cfg.pitch) : 45);
+                if (Math.abs(this._map.getPitch() - pitch) > 0.05) {
+                    this._map.setPitch(pitch);
                 }
             };
-            map.on('rotate', snapOrientation);
-            map.on('pitch', snapOrientation);
+            map.on('pitch', snapPitchOnly);
+            if (this._allowBearingDrag()) {
+                map.on('rotateend', () => {
+                    if (this._map) this._lockedBearing = this._map.getBearing();
+                });
+            }
         }
 
         if (opts.recalcMinZoom !== false) {
@@ -3330,12 +3350,13 @@ const MapModule = {
             pitch:            this._lockedPitch,
             minPitch:         this._lockedPitch,
             maxPitch:         this._lockedPitch,
-            dragRotate:       false,
+            dragRotate:       this._allowBearingDrag(),
             pitchWithRotate:  false,
             touchPitchRotate: false,
             antialias:        true
         });
         State.map = this._map;
+        this._map.getCanvas().addEventListener('contextmenu', (e) => e.preventDefault());
 
         const onMapReady = () => {
             if (this._loaded) return;

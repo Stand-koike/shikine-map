@@ -84,7 +84,9 @@
                 [maxLng + padLng, maxLat + padLat]
             ],
             bearing:   0,
-            pitch:     45
+            pitch:     45,
+            /** 右クリックドラッグでマップ回転（ピッチは固定） */
+            allowBearingDrag: true
         },
 
         POLL_INTERVAL: 30000,
