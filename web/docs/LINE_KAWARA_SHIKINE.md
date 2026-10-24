@@ -19,6 +19,8 @@ GAS / LINE チャネルが無い間は `posts` に見える行が無いので、
 - GAS（外浦の `gas-line-webhook` をコピーするか新規）
 - 店舗担当 LINE ユーザーと `store_id` の紐付け（`user_map` など）
 - ブックを「リンクを知っている全員・閲覧者」
+- `web/line-contract.js` を外浦版の契約定義に差し替え（現状はスタブ）。参照:  
+  `https://github.com/Stand-koike/sotoura-map/blob/main/web/line-contract.js`
 
 ---
 

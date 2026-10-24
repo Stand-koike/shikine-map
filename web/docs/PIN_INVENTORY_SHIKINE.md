@@ -132,4 +132,6 @@ gviz の `row.c[列番号]` です。**A 列 = 0** ではなく、本プロジ�
 ## 関連ファイル
 
 - [SHEET_SETUP_SHIKINE.md](SHEET_SETUP_SHIKINE.md)
+- [sheets/店舗マスタ_ヘッダー.csv](sheets/店舗マスタ_ヘッダー.csv)
+- [sheets/固定マスタ_ヘッダー.csv](sheets/固定マスタ_ヘッダー.csv)
 - [../assets/fixed-pins/README.md](../assets/fixed-pins/README.md)
