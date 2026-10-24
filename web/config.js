@@ -76,7 +76,7 @@
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: '20261024-pin-official-v2',
+            cacheVersion: '20261024-park4326',
             solarLat:   PARK_LAT,
             solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',
@@ -166,25 +166,6 @@
         },
 
         /** 探す: シート category → 表示名。ピンは非表示にせず強調だけ */
-        /**
-         * QGIS point_official（2026-10-24）— シート lat/lng より優先
-         * @see web/docs/sheets/point_official_2026-10-24.csv
-         */
-        PIN_COORDINATES_BY_STORE_ID: {
-            food_makimaki: { lat: 34.6824932921563, lng: 138.930984010395 },
-            food_12kitchen: { lat: 34.6825379662215, lng: 138.931109078408 },
-            food_takahashi_toriniku: { lat: 34.682322483868, lng: 138.930987026466 },
-            food_shimano: { lat: 34.6823518866714, lng: 138.93087404597 },
-            stage_outdoor: { lat: 34.6812526807269, lng: 138.931414503298 },
-            kids_wakuwaku: { lat: 34.682064308377, lng: 138.931091018924 },
-            ws_kids_core: { lat: 34.6823658382876, lng: 138.930573730965 },
-            pool_shikine: { lat: 34.6820041972965, lng: 138.930774716945 },
-            office_nature_walk: { lat: 34.6823942346664, lng: 138.930745527896 },
-            toilet_1: { lat: 34.6830374914053, lng: 138.932012836623 },
-            toilet_2: { lat: 34.6809301040032, lng: 138.931958979481 },
-            toilet_3: { lat: 34.6813727744368, lng: 138.933443691196 }
-        },
-
         /** 飲食タブのズーム対象（未設定時は category=フードエリア / store_id food_*） */
         FOOD_AREA_STORE_IDS: [
             'food_makimaki', 'food_12kitchen', 'food_takahashi_toriniku', 'food_shimano'
