@@ -25,14 +25,20 @@
      * park.png.points のアフィンから (0,0)(W,0)(W,H)(0,H) を計算した値を使う。
      * @see web/docs/georef/park.png.points / compute_image_corners.py
      */
+    var georef = (typeof window !== 'undefined' && window.__SHIKINE_MAP_GEOREF__)
+        ? window.__SHIKINE_MAP_GEOREF__
+        : null;
     var MAP_NW = [138.93004574694812, 34.68014377395333];
     var MAP_NE = [138.9344634492879, 34.68061954815408];
     var MAP_SE = [138.9343196484562, 34.68385877093156];
     var MAP_SW = [138.92990182365062, 34.68338309824799];
-    var minLng = Math.min(MAP_NW[0], MAP_NE[0], MAP_SE[0], MAP_SW[0]);
-    var maxLng = Math.max(MAP_NW[0], MAP_NE[0], MAP_SE[0], MAP_SW[0]);
-    var minLat = Math.min(MAP_NW[1], MAP_NE[1], MAP_SE[1], MAP_SW[1]);
-    var maxLat = Math.max(MAP_NW[1], MAP_NE[1], MAP_SE[1], MAP_SW[1]);
+    var mapCoords = (georef && georef.coordinates && georef.coordinates.length === 4)
+        ? georef.coordinates
+        : [MAP_NW, MAP_NE, MAP_SE, MAP_SW];
+    var minLng = Math.min(mapCoords[0][0], mapCoords[1][0], mapCoords[2][0], mapCoords[3][0]);
+    var maxLng = Math.max(mapCoords[0][0], mapCoords[1][0], mapCoords[2][0], mapCoords[3][0]);
+    var minLat = Math.min(mapCoords[0][1], mapCoords[1][1], mapCoords[2][1], mapCoords[3][1]);
+    var maxLat = Math.max(mapCoords[0][1], mapCoords[1][1], mapCoords[2][1], mapCoords[3][1]);
     var PARK_LNG = (minLng + maxLng) / 2;
     var PARK_LAT = (minLat + maxLat) / 2;
     var padLng = (maxLng - minLng) * 0.2;
@@ -61,16 +67,16 @@
         COLORS: { DEFAULT: '#2E7D32', RED: '#FF5252', YELLOW: '#FFCA28' },
 
         MAP_IMAGE: {
-            url:        'map.webp',
+            url:        (georef && georef.imageUrl) ? georef.imageUrl : 'map.webp',
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: '20261024-pitch0',
+            cacheVersion: (georef && georef.cacheVersion) ? georef.cacheVersion : '20261024-pitch0',
             solarLat:   PARK_LAT,
             solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',
 
-            coordinates: [MAP_NW, MAP_NE, MAP_SE, MAP_SW],
+            coordinates: mapCoords,
             latOffset:  0,
             lngOffset:  0,
             center:    [PARK_LNG, PARK_LAT],

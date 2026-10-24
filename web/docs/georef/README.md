@@ -8,11 +8,16 @@ GCP が画像の角以外のピクセルにある場合、`4point.csv` をその
 
 さらに `.points` の `sourceX/sourceY` は **ファイルの (0,0) と一致しない**（`sourceY` が負など）ので、GCP の source 範囲を画像外枠に線形マッピングしてから四隅を計算する（`compute_image_corners.py`）。
 
-`config.js` の四隅は `.points` からアフィンで求めた **画像外枠四隅の WGS84** を使います。再計算:
+**本番は GDAL ワープ**（QGIS と同じ変換）を使います。`park.png.points` を変えたら:
 
 ```bash
-python3 web/docs/georef/compute_image_corners.py
+# gdal-bin, pip install numpy pyproj
+python3 web/scripts/build_georef_map.py
 ```
+
+→ `map-georef.webp` と `georef.corners.js` が更新され、Mapbox は直交四隅に貼るだけなので **point.csv の座標と一致**します。
+
+（旧方式: 未ワープ `map.webp` に四隅だけ指定 → Mapbox の双線形補間と QGIS アフィンが一致せず、点と絵がずれる）
 
 ## 関連
 
