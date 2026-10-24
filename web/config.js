@@ -76,7 +76,7 @@
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: '20261024-pin-official-v3',
+            cacheVersion: '20261024-pin-official-v2',
             solarLat:   PARK_LAT,
             solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',
