@@ -19,16 +19,17 @@
      * 1024×724 PNG（map.webp）の四隅 WGS84。運営確認の座標（QGIS / 現地合わせ）。
      * 順序: NW, NE, SE, SW（Mapbox image source）。@see web/docs/MAP_GEOTIFF_SHIKINE.md
      */
-    var MAP_NW = [138.9299129, 34.6826781];
-    var MAP_NE = [138.9329727, 34.6836383];
-    var MAP_SE = [138.9344055, 34.6814562];
-    var MAP_SW = [138.9314464, 34.6802135];
-    var PARK_LNG = 138.932184375;
-    var PARK_LAT = 34.681996525;
-    var minLng = 138.9299129;
-    var maxLng = 138.9344055;
-    var minLat = 34.6802135;
-    var maxLat = 34.6836383;
+    /** @see web/docs/sheets/4point.csv（イラスト四隅・運営提供 2026-10-24） */
+    var MAP_NW = [138.929911760854, 34.6826754148076];
+    var MAP_NE = [138.932967922088, 34.6836381261816];
+    var MAP_SE = [138.934405075491, 34.6814521543504];
+    var MAP_SW = [138.931436651862, 34.6802178061394];
+    var minLng = 138.929911760854;
+    var maxLng = 138.934405075491;
+    var minLat = 34.6802178061394;
+    var maxLat = 34.6836381261816;
+    var PARK_LNG = (minLng + maxLng) / 2;
+    var PARK_LAT = (minLat + maxLat) / 2;
     var padLng = (maxLng - minLng) * 0.2;
     var padLat = (maxLat - minLat) * 0.2;
 
@@ -59,7 +60,7 @@
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: '20261024-qgis-corners',
+            cacheVersion: '20261024-4point',
             solarLat:   PARK_LAT,
             solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',
