@@ -179,6 +179,9 @@
             'stage_outdoor'
         ],
 
+        /** 遊ぶタブで image_url + image_url_2 を1枚のカード内に横並び表示 */
+        PLAY_TAB_DUAL_FLYER_STORE_IDS: ['stage_outdoor'],
+
         /**
          * 遊ぶタブ用フライヤー（固定マスタ未取得・画像列空のときの同梱 assets）
          * @see web/docs/sheets/fixed_master_ALL_seed.csv

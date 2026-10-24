@@ -904,6 +904,26 @@
                 min-height: 156px;
             }
         }
+        .card-flyer-duo {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            height: 100%;
+            padding: 5px 8px;
+            box-sizing: border-box;
+        }
+        .card-thumb--duo {
+            flex: 1 1 0;
+            min-width: 0;
+            width: auto;
+            height: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            object-position: center center;
+        }
         .card-emoji-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 48px; background: var(--color-secondary); }
         /* 画像上：各フィールドの有無のみ（テキスト本文は出さない） */
         .card-image-indicators {
@@ -4628,12 +4648,19 @@ const UIModule = {
             card.id = `card-${spot.id}`;
             card.onclick = () => App.selectSpot(actionSpot);
 
-            const thumbHtml = spot.imageUrl
-                ? `<img src="${spot.imageUrl}" class="card-thumb"
-                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-                : '';
+            const dualFlyers = spot._playFlyerDual && spot.imageUrl && spot.imageUrl2;
+            let thumbHtml = '';
+            if (dualFlyers) {
+                thumbHtml = `<div class="card-flyer-duo">
+                    <img src="${spot.imageUrl}" class="card-thumb card-thumb--duo" alt="">
+                    <img src="${spot.imageUrl2}" class="card-thumb card-thumb--duo" alt="">
+                </div>`;
+            } else if (spot.imageUrl) {
+                thumbHtml = `<img src="${spot.imageUrl}" class="card-thumb"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`;
+            }
             const placeholder = `<div class="card-emoji-placeholder"
-                style="${spot.imageUrl ? 'display:none' : ''}">${spot.emoji}</div>`;
+                style="${spot.imageUrl || dualFlyers ? 'display:none' : ''}">${spot.emoji}</div>`;
 
             const indParts = [];
             if (spot.livePost) {
@@ -4666,11 +4693,12 @@ const UIModule = {
                 </button>`;
             }
 
+            const cardTitleSpot = actionSpot || spot;
             card.innerHTML = `
                 <div class="card-image-area">${thumbHtml}${placeholder}${indicatorsHtml}</div>
                 <div class="card-info">
                     <div class="card-info-main">
-                        <div class="card-title">${val(spot, 'name')}</div>
+                        <div class="card-title">${val(cardTitleSpot, 'name')}</div>
                         ${statusHtml}
                         ${tagsHtml}
                         ${kawaraBtnHtml}
@@ -5461,8 +5489,20 @@ const App = {
             if (!spot) return;
             const cat = this._effectiveFilterCategorySpot(spot);
             if (cat === 'toilet' || cat === 'フードエリア' || this.isFoodAreaSpot(spot)) return;
-            const flyerUrls = [spot.imageUrl, spot.imageUrl2].filter(Boolean);
-            if (!flyerUrls.length) return;
+            const url1 = spot.imageUrl || '';
+            const url2 = spot.imageUrl2 || '';
+            const dualIds = (CONFIG.PLAY_TAB_DUAL_FLYER_STORE_IDS || ['stage_outdoor'])
+                .map(normalizeStoreId_);
+            const sid = normalizeStoreId_(spot.storeId);
+            if (url1 && url2 && dualIds.indexOf(sid) !== -1) {
+                cards.push({
+                    ...spot,
+                    _playFlyerCard: true,
+                    _playFlyerDual: true
+                });
+                return;
+            }
+            const flyerUrls = [url1, url2].filter(Boolean);
             flyerUrls.forEach((url, idx) => {
                 cards.push({
                     ...spot,
