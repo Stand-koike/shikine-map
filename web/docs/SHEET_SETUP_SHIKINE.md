@@ -54,7 +54,7 @@
 | L | store_id | 一意 ID（飲食は LINE 必須） |
 | M 以降 | status, news, … | 任意 |
 
-座標はイラスト四隅（`MAP_IMAGE.coordinates`、[MAP_GEOTIFF_SHIKINE.md](MAP_GEOTIFF_SHIKINE.md)）の中に置く。ピン lat/lng はまだ空です。
+座標は Google マップ等の WGS84 を C/D 列に入れる。イラストの四隅は [MAP_GEOTIFF_SHIKINE.md](MAP_GEOTIFF_SHIKINE.md)（運営確認値）と `config.js` の `MAP_IMAGE.coordinates`。
 
 ---
 
