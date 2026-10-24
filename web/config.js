@@ -277,6 +277,7 @@
                 supportedBy: 'Supported by',
                 parkTitle: '公園',
                 playTab: '遊ぶ',
+                foodTab: '食べる',
                 findHint: 'ピンは消さず、対象を大きく表示します'
             },
             en: {
@@ -293,6 +294,7 @@
                 supportedBy: 'Supported by',
                 parkTitle: 'Park',
                 playTab: 'Play',
+                foodTab: 'Eat',
                 findHint: 'Pins stay visible; matches are larger'
             }
         }
