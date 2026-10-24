@@ -134,6 +134,13 @@
             phone: '0558-23-6333'
         },
 
+        /** QGIS 等から出した参照点（web/data/point_029d.geojson） */
+        SURVEY_POINTS: {
+            enabled:    true,
+            url:        'data/point_029d.geojson',
+            showLabels: true
+        },
+
         CLUSTER: {
             enabled:          false,
             clusterMaxZoom:   17,

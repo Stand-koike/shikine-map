@@ -9,7 +9,7 @@
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
     <script src="line-contract.js"></script>
     <!-- 四隅変更時は ?v= を更新（GitHub Pages の config.js 長期キャッシュ対策） -->
-    <script src="config.js?v=20261024-qgis-corners"></script>
+    <script src="config.js?v=20261024-survey-points"></script>
     <script src="config.local.js" onerror="void 0"></script>
     <script>
         (function () {
@@ -2700,6 +2700,13 @@ const LayerManager = {
                 });
             }
             if (id === 'spots' && def.visible) UIModule.syncMarkerDisplay();
+        } else if (def.type === 'geojson-circle') {
+            const ids = def.layerIds || [`${id}-circle`, `${id}-label`];
+            ids.forEach(lid => {
+                if (this._map?.getLayer(lid)) {
+                    this._map.setLayoutProperty(lid, 'visibility', def.visible ? 'visible' : 'none');
+                }
+            });
         } else {
             const layerId = `${id}-layer`;
             if (this._map?.getLayer(layerId)) {
@@ -3351,6 +3358,7 @@ const MapModule = {
                     console.error('[MapModule] イラストレイヤ読込:', e);
                     return this._addIllustrationMapDayFallback();
                 })
+                .then(() => this._addSurveyPointsLayer())
                 .then(() => {
                     this._finalizeInitView({ duration: 0 });
                 })
@@ -3473,6 +3481,67 @@ const MapModule = {
      * 3 枚スタック失敗時: 昼 1 枚のみ（日周り切替なし）
      * @returns {Promise<void>}
      */
+    /**
+     * QGIS 出力 CSV → GeoJSON の参照点（ピン合わせ用）
+     * @returns {Promise<void>}
+     */
+    _addSurveyPointsLayer() {
+        const cfg = CONFIG.SURVEY_POINTS;
+        if (!cfg?.enabled || !cfg.url || !this._map) return Promise.resolve();
+        return fetch(cfg.url)
+            .then((r) => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then((geojson) => {
+                if (!this._map || this._map.getSource('survey-points')) return;
+                this._map.addSource('survey-points', { type: 'geojson', data: geojson });
+                this._map.addLayer({
+                    id:      'survey-points-circle',
+                    type:    'circle',
+                    source:  'survey-points',
+                    paint:   {
+                        'circle-radius':       7,
+                        'circle-color':        '#E91E63',
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-opacity':      0.95
+                    }
+                });
+                if (cfg.showLabels) {
+                    this._map.addLayer({
+                        id:       'survey-points-label',
+                        type:     'symbol',
+                        source:   'survey-points',
+                        layout:   {
+                            'text-field':  ['get', 'label'],
+                            'text-size':   11,
+                            'text-offset': [0, 1.3],
+                            'text-anchor': 'top'
+                        },
+                        paint:    {
+                            'text-color':      '#880E4F',
+                            'text-halo-color': '#ffffff',
+                            'text-halo-width': 1.2
+                        }
+                    });
+                }
+                if (!LayerManager._defs.survey_points) {
+                    LayerManager._defs.survey_points = {
+                        name:     'QGISポイント',
+                        name_en:  'Survey points',
+                        icon:     '📍',
+                        color:    '#E91E63',
+                        visible:  true,
+                        type:     'geojson-circle',
+                        layerIds: ['survey-points-circle', 'survey-points-label']
+                    };
+                    UIModule.renderLayerPanel();
+                }
+            })
+            .catch((e) => console.warn('[MapModule] QGIS 参照点レイヤ:', e));
+    },
+
     _addIllustrationMapDayFallback() {
         const cfg = CONFIG.MAP_IMAGE;
         const dayUrl = cfg.urlDay || cfg.url;
@@ -5041,6 +5110,7 @@ const App = {
         const fixedVisible = LayerManager.getDefs().fixed?.visible !== false;
         State.fixedSpots.forEach(spot => UIModule._appendFixedHtmlMarker(spot, fixedVisible));
         UIModule.applyPinEmphasis();
+        if (State.fixedSpots.length > 0) App._focusMapWhenReady();
     },
 
     // データ取得完了後のメイン処理
