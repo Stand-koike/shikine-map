@@ -25,10 +25,10 @@
      * park.png.points のアフィンから (0,0)(W,0)(W,H)(0,H) を計算した値を使う。
      * @see web/docs/georef/park.png.points / compute_image_corners.py
      */
-    var MAP_NW = [138.92984332047556, 34.68345933759301];
-    var MAP_NE = [138.9333648636672, 34.68383855342811];
-    var MAP_SE = [138.9332889535992, 34.68554841081278];
-    var MAP_SW = [138.9297673382443, 34.68516919342476];
+    var MAP_NW = [138.93004574694812, 34.68014377395333];
+    var MAP_NE = [138.9344634492879, 34.68061954815408];
+    var MAP_SE = [138.9343196484562, 34.68385877093156];
+    var MAP_SW = [138.92990182365062, 34.68338309824799];
     var minLng = Math.min(MAP_NW[0], MAP_NE[0], MAP_SE[0], MAP_SW[0]);
     var maxLng = Math.max(MAP_NW[0], MAP_NE[0], MAP_SE[0], MAP_SW[0]);
     var minLat = Math.min(MAP_NW[1], MAP_NE[1], MAP_SE[1], MAP_SW[1]);
@@ -65,7 +65,7 @@
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: '20261024-georef-points',
+            cacheVersion: '20261024-georef-file-corners',
             solarLat:   PARK_LAT,
             solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',

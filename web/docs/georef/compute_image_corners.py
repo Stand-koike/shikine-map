@@ -53,13 +53,26 @@ def main() -> None:
         )
 
     t = Transformer.from_crs(epsg, 4326, always_xy=True)
+    # Georeferencer の sourceX/sourceY は画像ファイル座標と一致しない（sourceY が負など）。
+    # GCP の source 範囲を画像外枠 (0,0)〜(W,H) に線形マッピングしてからアフィンへ渡す。
+    src_x = [g[2] for g in gcps]
+    src_y = [g[3] for g in gcps]
+    sx_min, sx_max = min(src_x), max(src_x)
+    sy_top, sy_bot = min(src_y), max(src_y)
+
+    def file_to_source(col: float, row: float) -> tuple[float, float]:
+        sx = sx_min + (col / IMG_W) * (sx_max - sx_min)
+        sy = sy_top + (row / IMG_H) * (sy_bot - sy_top)
+        return sx, sy
+
     names = ["NW", "NE", "SE", "SW"]
-    pixels = [(0, 0), (IMG_W, 0), (IMG_W, IMG_H), (0, IMG_H)]
+    file_pixels = [(0, 0), (IMG_W, 0), (IMG_W, IMG_H), (0, IMG_H)]
     out = []
-    for name, (sx, sy) in zip(names, pixels):
+    for name, (col, row) in zip(names, file_pixels):
+        sx, sy = file_to_source(col, row)
         mx, my = pix_to_plane(sx, sy)
         lng, lat = t.transform(mx, my)
-        out.append({"corner": name, "lng": lng, "lat": lat, "pixel": [sx, sy]})
+        out.append({"corner": name, "lng": lng, "lat": lat, "pixel": [col, row]})
     print(json.dumps({"imageSize": [IMG_W, IMG_H], "corners": out}, indent=2))
 
 

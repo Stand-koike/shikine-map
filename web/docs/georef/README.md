@@ -6,6 +6,8 @@ QGIS Georeferencer の GCP（第 VIII 系 → アフィン）。**4point.csv の
 
 GCP が画像の角以外のピクセルにある場合、`4point.csv` をそのまま `MAP_IMAGE.coordinates` に入れると **点は正しいのに絵だけずれる**（数十〜数百 m）。
 
+さらに `.points` の `sourceX/sourceY` は **ファイルの (0,0) と一致しない**（`sourceY` が負など）ので、GCP の source 範囲を画像外枠に線形マッピングしてから四隅を計算する（`compute_image_corners.py`）。
+
 `config.js` の四隅は `.points` からアフィンで求めた **画像外枠四隅の WGS84** を使います。再計算:
 
 ```bash
