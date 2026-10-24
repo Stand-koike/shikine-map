@@ -165,6 +165,11 @@
         },
 
         /** 探す: シート category → 表示名。ピンは非表示にせず強調だけ */
+        /** 飲食タブのズーム対象（未設定時は category=フードエリア / store_id food_*） */
+        FOOD_AREA_STORE_IDS: [
+            'food_makimaki', 'food_12kitchen', 'food_takahashi_toriniku', 'food_shimano'
+        ],
+
         FIND_GROUPS: [
             { category: 'フードエリア', label: '飲食' },
             { category: 'toilet', label: 'トイレ' },
@@ -212,7 +217,8 @@
                 kawaraView: '最新情報を見る',
                 kawaraTitle: '最新情報',
                 supportedBy: 'Supported by',
-                parkTitle: '公園',
+                parkTitle: '公園🌲',
+                playTab: '遊ぶ',
                 findHint: 'ピンは消さず、対象を大きく表示します'
             },
             en: {
@@ -228,6 +234,7 @@
                 kawaraTitle: 'Latest',
                 supportedBy: 'Supported by',
                 parkTitle: 'Park',
+                playTab: 'Play',
                 findHint: 'Pins stay visible; matches are larger'
             }
         }
