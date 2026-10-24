@@ -1730,7 +1730,7 @@
             </a>
             <button type="button" class="btn-kawara btn-kawara-large" id="modal-kawara-btn"
                 onclick="UIModule.openKawaraFromModal()">
-                <i class="fas fa-newspaper" aria-hidden="true"></i> <span id="modal-kawara-text">かわら版を見る</span>
+                <i class="fas fa-newspaper" aria-hidden="true"></i> <span id="modal-kawara-text">最新情報を見る</span>
             </button>
             <button class="btn-coupon-large" id="modal-coupon-btn" onclick="UIModule.showCoupon()">
                 <i class="fas fa-ticket-alt"></i> <span id="btn-coupon-text">クーポンを使う</span>
@@ -1753,7 +1753,7 @@
 <div class="kawara-modal-overlay" id="kawara-modal-overlay" onclick="UIModule.closeKawaraModal(event)">
     <div class="kawara-modal-box" onclick="event.stopPropagation()">
         <div class="kawara-modal-header">
-            <span class="kawara-title-label" id="kawara-label">かわら版</span>
+            <span class="kawara-title-label" id="kawara-label">最新情報</span>
             <button type="button" class="kawara-close" onclick="UIModule.closeKawaraModal(null, true)" aria-label="閉じる">×</button>
         </div>
         <div class="kawara-modal-body">
@@ -1843,7 +1843,8 @@ const State = {
     fixedPollInterval:     null,
     scheduleItems:         [],
     lastScheduleHash:      '',
-    schedulePollInterval:  null
+    schedulePollInterval:  null,
+    emphasisStoreIds:      []
 };
 
 // ================================================================
@@ -1862,6 +1863,13 @@ const getStatusInfo = (status) => {
 };
 
 const CATEGORY_ICONS = {
+    'フードエリア':   'fa-utensils',
+    'toilet':         'fa-restroom',
+    'stage':          'fa-music',
+    'kids_play':      'fa-child',
+    'ws_indoor':      'fa-chalkboard-user',
+    'pool':           'fa-person-swimming',
+    'park_office':    'fa-tree',
     'グルメ':         'fa-utensils',
     'レストラン':     'fa-utensils',
     'カフェ':         'fa-mug-hot',
@@ -2002,6 +2010,12 @@ function parseSheetDate(tsVal) {
 function normalizeStoreId_(raw) {
     if (raw == null || String(raw).trim() === '') return '';
     return String(raw).replace(/\s+/g, ' ').trim();
+}
+
+/** タイムテーブル store_id。カンマ区切りで複数ピンを強調できる */
+function parseStoreIdList_(raw) {
+    if (raw == null || String(raw).trim() === '') return [];
+    return String(raw).split(/[,、]/).map(normalizeStoreId_).filter(Boolean);
 }
 
 /** posts シート: createdAt 列が空・✔・TRUE のときも受け付ける */
@@ -3606,6 +3620,32 @@ const MapModule = {
         });
     },
 
+    fitToSpots(spots) {
+        const valid = (spots || []).filter(s => {
+            const c = s?.coords;
+            return Array.isArray(c) && c.length >= 2
+                && Number.isFinite(Number(c[0])) && Number.isFinite(Number(c[1]));
+        });
+        if (!valid.length || !this._map) return;
+        if (valid.length === 1) {
+            this.flyTo(valid[0]);
+            return;
+        }
+        const padding = State.isPC
+            ? { top: 50, bottom: 50, left: 50, right: 50 }
+            : { top: 50, bottom: 240, left: 20, right: 20 };
+        const cam = this._cameraLock();
+        const bounds = new mapboxgl.LngLatBounds();
+        valid.forEach(s => bounds.extend(s.coords));
+        this._map.fitBounds(bounds, {
+            padding,
+            maxZoom: Number(CONFIG.CLUSTER?.flyToZoom) || 17.5,
+            bearing: cam.bearing,
+            pitch: cam.pitch,
+            duration: 800
+        });
+    },
+
     flyToUser() {
         if (State.userLocationMarker) {
             const flyZoom = Number(CONFIG.CLUSTER?.flyToZoom);
@@ -3859,8 +3899,10 @@ const UIModule = {
     },
 
     applyPinEmphasis() {
+        const emphasis = State.emphasisStoreIds || [];
         const cats = App._allFilterCategoryKeys();
-        const allOn = cats.length > 0
+        const allOn = !emphasis.length
+            && cats.length > 0
             && cats.every(c => App._selectedCategories.has(c))
             && State.selectedTags.size === 0;
         const mark = (spot) => {
@@ -3868,11 +3910,16 @@ const UIModule = {
             if (!el) return;
             el.classList.remove('marker-dim', 'marker-focus');
             if (allOn) return;
-            const cat = App._effectiveFilterCategorySpot(spot);
-            let ok = App._selectedCategories.has(cat);
-            if (ok && State.selectedTags.size > 0) {
-                const spotTags = (State.language === 'ja' ? spot.tags : spot.tags_en) || [];
-                ok = spotTags.some(tag => State.selectedTags.has(tag));
+            let ok;
+            if (emphasis.length) {
+                ok = emphasis.indexOf(normalizeStoreId_(spot.storeId)) !== -1;
+            } else {
+                const cat = App._effectiveFilterCategorySpot(spot);
+                ok = App._selectedCategories.has(cat);
+                if (ok && State.selectedTags.size > 0) {
+                    const spotTags = (State.language === 'ja' ? spot.tags : spot.tags_en) || [];
+                    ok = spotTags.some(tag => State.selectedTags.has(tag));
+                }
             }
             el.classList.add(ok ? 'marker-focus' : 'marker-dim');
         };
@@ -4054,6 +4101,11 @@ const UIModule = {
             e.stopPropagation();
             document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('active'));
             el.classList.add('active');
+            const noModal = (CONFIG.FIXED_PIN_NO_MODAL || []).indexOf(spot.category) !== -1;
+            if (noModal) {
+                if (MapModule.flyTo) MapModule.flyTo(spot);
+                return;
+            }
             UIModule.openModal(spot.id);
         });
 
@@ -4508,12 +4560,21 @@ const UIModule = {
     },
 
     _focusScheduleItem(item) {
-        const spot = this._findSpotByStoreId(item.storeId);
-        if (!spot) return;
+        const ids = parseStoreIdList_(item.storeId);
+        if (!ids.length) return;
+        State.emphasisStoreIds = ids;
         const sheet = document.getElementById('timetable-overlay');
         if (sheet) sheet.classList.remove('is-full');
-        App.selectSpot(spot);
-        this.openModal(spot.id);
+        const spots = ids.map(id => this._findSpotByStoreId(id)).filter(Boolean);
+        this.applyPinEmphasis();
+        if (spots.length === 1) {
+            const spot = spots[0];
+            const noModal = (CONFIG.FIXED_PIN_NO_MODAL || []).indexOf(spot.category) !== -1;
+            App.selectSpot(spot);
+            if (!noModal) this.openModal(spot.id);
+            return;
+        }
+        if (spots.length > 1 && MapModule.fitToSpots) MapModule.fitToSpots(spots);
     },
 
     _formatTimetableTime(item) {
@@ -4536,7 +4597,7 @@ const UIModule = {
         items.forEach(item => {
             const div = document.createElement('div');
             div.className = 'timetable-item';
-            if (item.storeId) {
+            if (parseStoreIdList_(item.storeId).length) {
                 div.addEventListener('click', () => this._focusScheduleItem(item));
             }
             const titleHtml = item.title
@@ -4887,6 +4948,9 @@ const App = {
 
     _allFilterCategoryKeys() {
         const catSet = new Set();
+        (CONFIG.FIND_GROUPS || []).forEach(g => {
+            if (g.category) catSet.add(g.category);
+        });
         State.allSpots.forEach(s => {
             const c = val(s, 'category');
             if (c) catSet.add(c);
@@ -4899,6 +4963,17 @@ const App = {
         (State.liveStandalonePosts || []).forEach(lp => {
             if (lp.category) catSet.add(lp.category);
         });
+        const groups = CONFIG.FIND_GROUPS || [];
+        if (groups.length) {
+            const ordered = [];
+            groups.forEach(g => {
+                if (g.category && catSet.has(g.category)) {
+                    ordered.push(g.category);
+                    catSet.delete(g.category);
+                }
+            });
+            return ordered.concat([...catSet].sort((a, b) => String(a).localeCompare(String(b), 'ja')));
+        }
         return [...catSet].sort((a, b) => String(a).localeCompare(String(b), 'ja'));
     },
 
@@ -5049,10 +5124,12 @@ const App = {
             this._selectedCategories.add(c);
         });
         State.selectedTags.clear();
+        State.emphasisStoreIds = [];
         this._refreshUI();
     },
 
     toggleCategory(category, isChecked) {
+        State.emphasisStoreIds = [];
         if (isChecked) this._selectedCategories.add(category);
         else           this._selectedCategories.delete(category);
 
@@ -5063,6 +5140,7 @@ const App = {
     },
 
     toggleAll(isChecked) {
+        State.emphasisStoreIds = [];
         document.querySelectorAll('#filter-list input').forEach(input => {
             input.checked = isChecked;
             const cat = input.getAttribute('data-cat');
@@ -5101,6 +5179,7 @@ const App = {
 
     // タグフィルタのトグル（カード・モーダルのチップとパネルから共有）
     toggleTagFilter(tag) {
+        State.emphasisStoreIds = [];
         if (State.selectedTags.has(tag)) {
             State.selectedTags.delete(tag);
         } else {

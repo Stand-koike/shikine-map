@@ -1,7 +1,8 @@
 /**
- * LINE 連携の契約定義（敷根公園フェスマップでは未使用）
+ * LINE 連携の契約定義
  *
- * index.html が読み込むためスタブのみ。GAS・posts シートは不要。
+ * posts シート名と最小フラグ。列定義の既定値は index.html の POSTS_COL。
+ * GAS デプロイ後もこのスタブでフロントの読み取りは動く。
  */
 (function (global) {
     'use strict';

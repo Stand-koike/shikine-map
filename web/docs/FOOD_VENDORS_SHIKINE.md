@@ -47,6 +47,6 @@
 
 ---
 
-## LINE かわら版
+## LINE 最新情報
 
-[LINE_KAWARA_SHIKINE.md](LINE_KAWARA_SHIKINE.md) — 有効化後、上記 `store_id` を `posts` シートに使用。
+[LINE_KAWARA_SHIKINE.md](LINE_KAWARA_SHIKINE.md) — フロントは ON。上記 `store_id` を `posts` シートに使用。
