@@ -8,7 +8,7 @@ GCP が画像の角以外のピクセルにある場合、`4point.csv` をその
 
 さらに `.points` の `sourceX/sourceY` は **ファイルの (0,0) と一致しない**（`sourceY` が負など）ので、GCP の source 範囲を画像外枠に線形マッピングしてから四隅を計算する（`compute_image_corners.py`）。
 
-**本番は GDAL ワープ**（QGIS と同じ変換）を使います。`park.png.points` を変えたら:
+**Web の既定は `map.webp` + `compute_image_corners.py` の四隅**（`index.html` は `georef.corners.js` を読みません）。GDAL ワープは任意。`park.png.points` を変えたら:
 
 ```bash
 # gdal-bin, pip install numpy pyproj

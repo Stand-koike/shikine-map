@@ -5,13 +5,13 @@
       "type": "Feature",
       "properties": {
         "id": 1,
-        "label": "P1"
+        "label": "トイレ(駐車場上)"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.932034611642,
-          34.6830241958792
+          138.932012836623,
+          34.6830374914053
         ]
       }
     },
@@ -19,13 +19,13 @@
       "type": "Feature",
       "properties": {
         "id": 2,
-        "label": "P2"
+        "label": "12"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.931111982676,
-          34.6825267983851
+          138.931109078408,
+          34.6825379662215
         ]
       }
     },
@@ -33,13 +33,13 @@
       "type": "Feature",
       "properties": {
         "id": 3,
-        "label": "P3"
+        "label": "makimaki"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.930986154752,
-          34.6824798832269
+          138.930984010395,
+          34.6824932921563
         ]
       }
     },
@@ -47,13 +47,13 @@
       "type": "Feature",
       "properties": {
         "id": 4,
-        "label": "P4"
+        "label": "しまの"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.930957989536,
-          34.6823130947125
+          138.93087404597,
+          34.6823518866714
         ]
       }
     },
@@ -61,13 +61,13 @@
       "type": "Feature",
       "properties": {
         "id": 5,
-        "label": "P5"
+        "label": "髙橋精肉店"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.930879028435,
-          34.6823539682681
+          138.930987026466,
+          34.682322483868
         ]
       }
     },
@@ -75,13 +75,13 @@
       "type": "Feature",
       "properties": {
         "id": 6,
-        "label": "P6"
+        "label": "敷根公園事務所"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.930753422809,
-          34.6823499017291
+          138.930745527896,
+          34.6823942346664
         ]
       }
     },
@@ -89,13 +89,13 @@
       "type": "Feature",
       "properties": {
         "id": 7,
-        "label": "P7"
+        "label": "トレーニングルーム"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.931055032392,
-          34.6820736956317
+          138.930573730965,
+          34.6823658382876
         ]
       }
     },
@@ -103,13 +103,13 @@
       "type": "Feature",
       "properties": {
         "id": 8,
-        "label": "P8"
+        "label": "プール"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.930611816896,
-          34.6823548711541
+          138.930774716945,
+          34.6820041972965
         ]
       }
     },
@@ -117,13 +117,13 @@
       "type": "Feature",
       "properties": {
         "id": 9,
-        "label": "P9"
+        "label": "わくわく広場"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.930749329677,
-          34.6819952796842
+          138.931091018924,
+          34.682064308377
         ]
       }
     },
@@ -131,13 +131,13 @@
       "type": "Feature",
       "properties": {
         "id": 10,
-        "label": "P10"
+        "label": "グラウンド"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.93069422312,
-          34.6822476707065
+          138.931956231428,
+          34.6819033380519
         ]
       }
     },
@@ -145,13 +145,13 @@
       "type": "Feature",
       "properties": {
         "id": 11,
-        "label": "P11"
+        "label": "ステージ"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.931405848089,
-          34.6812528165071
+          138.931414503298,
+          34.6812526807269
         ]
       }
     },
@@ -159,13 +159,13 @@
       "type": "Feature",
       "properties": {
         "id": 12,
-        "label": "P12"
+        "label": "トイレ(グラウンド)"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.908666690833,
-          34.6887349454111
+          138.931958979481,
+          34.6809301040032
         ]
       }
     },
@@ -173,41 +173,13 @@
       "type": "Feature",
       "properties": {
         "id": 13,
-        "label": "P13"
+        "label": "トイレ(テニス)"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          138.931813790606,
-          34.6810090922961
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "id": 14,
-        "label": "P14"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          138.933393123872,
-          34.6813591702579
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "id": 15,
-        "label": "P15"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          138.932014731817,
-          34.6818209322973
+          138.933443691196,
+          34.6813727744368
         ]
       }
     }

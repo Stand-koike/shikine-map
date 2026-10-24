@@ -1,8 +1,7 @@
 # 敷根フェスマップ — いま揃っている情報（位置だけ後入れ用）
 
-**あなたが後から入れるのは主に各ピンの lat/lng です。**  
-イラスト四隅は `geo_park.pgw` から入れてあります（CRS 仮定あり → [MAP_GEOTIFF_SHIKINE.md](MAP_GEOTIFF_SHIKINE.md)）。  
-ピンのモーダル見た目の細部は後で詰めます。このファイルは 2026-10-24 時点の整理です。
+**ピン lat/lng・イラスト四隅は 2026-10-24 に QGIS `park_4326.tif` / `point.csv` で確定**（→ [MAP_GEOTIFF_SHIKINE.md](MAP_GEOTIFF_SHIKINE.md)、シード [sheets/point_official_2026-10-24.csv](sheets/point_official_2026-10-24.csv)）。  
+**Google スプレッドシート**は `food_vendors_seed.csv` / `fixed_master_ALL_seed.csv` を貼り直す必要あり（リポジトリだけではシートは自動更新されない）。
 
 専用ブック（作成済み）:
 
@@ -25,11 +24,11 @@
 
 ---
 
-## ピン一覧（座標はすべて空）
+## ピン一覧（lat/lng はシード CSV に反映済み・シート要同期）
 
 | store_id | 表示名 | レイヤー | category | 画像 | あとで入れる |
 |----------|--------|----------|----------|------|----------------|
-| `food_makimaki` | 伊豆下田食堂まきまき | 店舗 | フードエリア | vendors/makimaki | **lat/lng** |
+| `food_makimaki` | 伊豆下田食堂まきまき | 店舗 | フードエリア | vendors/makimaki | シード済み |
 | `food_12kitchen` | 12 KITCHEN SHIMODA | 店舗 | フードエリア | 12kitchen-shimoda | **lat/lng** |
 | `food_takahashi_toriniku` | 高橋鳥肉店 | 店舗 | フードエリア | takahashi-toriniku | **lat/lng** |
 | `food_shimano` | 味な菓子処 しまの | 店舗 | フードエリア | shimano-kashi | **lat/lng** |

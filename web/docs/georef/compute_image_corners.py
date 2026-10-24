@@ -69,15 +69,23 @@ def main() -> None:
         sy = sy_top + (row / IMG_H) * (sy_bot - sy_top)
         return sx, sy
 
-    names = ["NW", "NE", "SE", "SW"]
+    # Mapbox image source: 画像 TL, TR, BR, BL の順で [lng, lat]
+    labels = ["TL", "TR", "BR", "BL"]
     file_pixels = [(0, 0), (IMG_W, 0), (IMG_W, IMG_H), (0, IMG_H)]
-    out = []
-    for name, (col, row) in zip(names, file_pixels):
+    raw: list[dict] = []
+    for label, (col, row) in zip(labels, file_pixels):
         sx, sy = file_to_source(col, row)
         mx, my = pix_to_plane(sx, sy)
         lng, lat = t.transform(mx, my)
-        out.append({"corner": name, "lng": lng, "lat": lat, "pixel": [col, row]})
-    print(json.dumps({"imageSize": [IMG_W, IMG_H], "corners": out}, indent=2))
+        raw.append({"corner": label, "lng": lng, "lat": lat, "pixel": [col, row]})
+
+    # アフィン上で row 0 が南側になる場合、Mapbox 用に上下入れ替え（絵の北が上）
+    if raw[0]["lat"] < raw[3]["lat"]:
+        raw = [raw[3], raw[2], raw[1], raw[0]]
+        for i, label in enumerate(labels):
+            raw[i]["corner"] = label
+
+    print(json.dumps({"imageSize": [IMG_W, IMG_H], "corners": raw}, indent=2))
 
 
 if __name__ == "__main__":

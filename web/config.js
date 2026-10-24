@@ -1,7 +1,7 @@
 /**
  * エリア設定 — 敷根公園フェスマップ（shikine-map）
  *
- * イラスト対象: 総合運動公園（四隅 WGS84 は運営確認値。pgw 推定は MAP_GEOTIFF_SHIKINE.md 参考）。
+ * イラスト対象: 総合運動公園（四隅・map.webp は QGIS 書き出し park_4326.tif 由来）。
  * ピン設計（飲食4 + 固定9）: web/docs/PIN_INVENTORY_SHIKINE.md
  *
  * ローカル微調整: config.local.js（Git 除外）
@@ -16,21 +16,16 @@
         : {};
 
     /**
-     * 1024×724 PNG（map.webp）の四隅 WGS84。運営確認の座標（QGIS / 現地合わせ）。
-     * 順序: NW, NE, SE, SW（Mapbox image source）。@see web/docs/MAP_GEOTIFF_SHIKINE.md
+     * map.webp 外枠 WGS84（Mapbox: 画像 TL, TR, BR, BL）。
+     * qgis/export/park_4326.tif → gdalinfo cornerCoordinates（2026-10-24）。
+     * @see web/docs/MAP_GEOTIFF_SHIKINE.md
      */
-    /**
-     * map.webp 外枠四隅の WGS84（Mapbox image source: NW, NE, SE, SW）。
-     * QGIS Georeferencer の GCP 地上座標（4point.csv）とは別 — GCP が画像角以外のピクセルにあるため、
-     * park.png.points のアフィンから (0,0)(W,0)(W,H)(0,H) を計算した値を使う。
-     * @see web/docs/georef/park.png.points / compute_image_corners.py
-     */
-    /* 未ワープの map.webp。QGIS と同じ位置合わせは EPSG:4326 GeoTIFF が来るまで行わない。 */
-    var MAP_NW = [138.93004574694812, 34.68014377395333];
-    var MAP_NE = [138.9344634492879, 34.68061954815408];
-    var MAP_SE = [138.9343196484562, 34.68385877093156];
-    var MAP_SW = [138.92990182365062, 34.68338309824799];
-    var mapCoords = [MAP_NW, MAP_NE, MAP_SE, MAP_SW];
+    var MAP_TL = [138.9290221, 34.6837438];
+    var MAP_TR = [138.935199, 34.6837438];
+    var MAP_BR = [138.935199, 34.680125];
+    var MAP_BL = [138.9290221, 34.680125];
+    var mapCoords = [MAP_TL, MAP_TR, MAP_BR, MAP_BL];
+
     var minLng = Math.min(mapCoords[0][0], mapCoords[1][0], mapCoords[2][0], mapCoords[3][0]);
     var maxLng = Math.max(mapCoords[0][0], mapCoords[1][0], mapCoords[2][0], mapCoords[3][0]);
     var minLat = Math.min(mapCoords[0][1], mapCoords[1][1], mapCoords[2][1], mapCoords[3][1]);
@@ -67,7 +62,7 @@
             dayOnly:    true,
             urlSunset:  null,
             urlNight:   null,
-            cacheVersion: '20261024-restore-map',
+            cacheVersion: '20261024-park4326',
             solarLat:   PARK_LAT,
             solarLng:   PARK_LNG,
             timezone:   'Asia/Tokyo',
@@ -142,9 +137,9 @@
             phone: '0558-23-6333'
         },
 
-        /** QGIS 等から出した参照点（web/data/point_029d.geojson） */
+        /** QGIS 公式点の控え（デバッグ時のみ true） */
         SURVEY_POINTS: {
-            enabled:    true,
+            enabled:    false,
             url:        'data/point_029d.geojson',
             showLabels: true
         },
