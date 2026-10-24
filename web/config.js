@@ -179,6 +179,55 @@
             'stage_outdoor'
         ],
 
+        /**
+         * 遊ぶタブ用フライヤー（固定マスタ未取得・画像列空のときの同梱 assets）
+         * @see web/docs/sheets/fixed_master_ALL_seed.csv
+         */
+        PLAY_TAB_FLYER_FALLBACK: {
+            kids_wakuwaku: {
+                name: 'わくわく広場',
+                lat: 34.682064308377,
+                lng: 138.931091018924,
+                category: 'kids_play',
+                emoji: '🎈',
+                imageUrl: 'assets/kids/wakuwaku-hiroba.webp'
+            },
+            ws_kids_core: {
+                name: 'キッズコアトレーニング',
+                lat: 34.6823658382876,
+                lng: 138.930573730965,
+                category: 'ws_indoor',
+                emoji: '🏃',
+                imageUrl: 'assets/workshops/kids-core-training.webp',
+                url: 'https://logoform.jp/f/srRs9'
+            },
+            pool_shikine: {
+                name: '敷根プール（無料開放）',
+                lat: 34.6820041972965,
+                lng: 138.930774716945,
+                category: 'pool',
+                emoji: '🏊',
+                imageUrl: 'assets/pool/shikine-pool-free-opening.webp'
+            },
+            office_nature_walk: {
+                name: '自然観察体験会（敷根公園事務所）',
+                lat: 34.6823942346664,
+                lng: 138.930745527896,
+                category: 'park_office',
+                emoji: '🌿',
+                imageUrl: 'assets/office/nature-walk-shikine.webp'
+            },
+            stage_outdoor: {
+                name: '敷根公園野外ステージ',
+                lat: 34.6812526807269,
+                lng: 138.931414503298,
+                category: 'stage',
+                emoji: '🎤',
+                imageUrl: 'assets/stage/aozora-yoga.webp',
+                imageUrl2: 'assets/stage/shikine-music-stage-timetable.webp'
+            }
+        },
+
         FIND_GROUPS: [
             { category: 'フードエリア', label: '飲食' },
             { category: 'toilet', label: 'トイレ' },

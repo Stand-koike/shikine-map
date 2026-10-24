@@ -4995,8 +4995,7 @@ const UIModule = {
     // ---- 詳細モーダル ----
 
     openModal(spotId) {
-        const spot = State.allSpots.find(s => s.id === spotId)
-            || State.fixedSpots.find(s => s.id === spotId);
+        const spot = App.findSpotById(spotId);
         if (!spot) return;
         State.currentSpot = spot;
 
@@ -5334,18 +5333,58 @@ const App = {
         return State.allSpots.filter(s => this.isFoodAreaSpot(s));
     },
 
+    findSpotById(spotId) {
+        if (!spotId) return null;
+        const direct = State.allSpots.find(s => s.id === spotId)
+            || State.fixedSpots.find(s => s.id === spotId);
+        if (direct) return direct;
+        const m = /^fixed_spot_(.+)$/.exec(String(spotId));
+        if (m) return this.getPlayTabBaseSpot(m[1]);
+        return null;
+    },
+
+    getPlayTabBaseSpot(storeId) {
+        const sid = normalizeStoreId_(storeId);
+        if (!sid) return null;
+        const fixed = State.fixedSpots.find(s => normalizeStoreId_(s.storeId) === sid);
+        const fb = (CONFIG.PLAY_TAB_FLYER_FALLBACK || {})[sid];
+        if (!fixed && !fb) return null;
+
+        const lat = fixed?.coords?.[1] ?? fb?.lat;
+        const lng = fixed?.coords?.[0] ?? fb?.lng;
+        if (lat == null || lng == null) return fixed || null;
+
+        const pickUrl = (a, b) => resolveSheetMediaUrl(a || b || '');
+        const imageUrl = pickUrl(fixed?.imageUrl, fb?.imageUrl);
+        const imageUrl2 = pickUrl(fixed?.imageUrl2, fb?.imageUrl2);
+        const imageUrl3 = pickUrl(fixed?.imageUrl3, fb?.imageUrl3);
+
+        return {
+            ...(fixed || {}),
+            id: fixed?.id || `fixed_spot_${sid}`,
+            storeId: sid,
+            isFixed: true,
+            coords: fixed?.coords || [Number(lng), Number(lat)],
+            name: fixed?.name || fb?.name || sid,
+            name_en: fixed?.name_en || fb?.name_en || fixed?.name || fb?.name || sid,
+            emoji: fixed?.emoji || fb?.emoji || '📍',
+            category: fixed?.category || fb?.category || '',
+            desc: fixed?.desc || fb?.desc || '',
+            url: fixed?.url || fb?.url || '',
+            imageUrl,
+            imageUrl2,
+            imageUrl3
+        };
+    },
+
     resolveSpotFromCard(spot) {
         if (!spot || !spot._playFlyerBaseId) return spot;
-        return State.fixedSpots.find(s => s.id === spot._playFlyerBaseId)
-            || State.allSpots.find(s => s.id === spot._playFlyerBaseId)
-            || spot;
+        return this.findSpotById(spot._playFlyerBaseId) || spot;
     },
 
     /** 遊ぶタブ: 固定マスタのフライヤー（image_url / image_url_2）を横並びカード */
     getPlayTabCardSpots() {
         const order = CONFIG.PLAY_TAB_STORE_IDS || [];
-        const findFixed = (storeId) => State.fixedSpots.find(s =>
-            normalizeStoreId_(s.storeId) === normalizeStoreId_(storeId));
         const cards = [];
 
         const pushFlyerCards = (spot) => {
@@ -5368,9 +5407,9 @@ const App = {
         };
 
         if (order.length) {
-            order.forEach(storeId => pushFlyerCards(findFixed(storeId)));
+            order.forEach(storeId => pushFlyerCards(this.getPlayTabBaseSpot(storeId)));
         } else {
-            State.fixedSpots.forEach(spot => pushFlyerCards(spot));
+            State.fixedSpots.forEach(spot => pushFlyerCards(this.getPlayTabBaseSpot(spot.storeId)));
         }
         return cards;
     },
