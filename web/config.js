@@ -52,7 +52,7 @@
         });
     }
 
-    /** 任意の基準点の周りに縮める（スマホで左下＝テニスコート寄りを見せる） */
+    /** 任意の基準点の周りに縮める */
     function scaleMapCoordsAround(coords, factor, anchorLng, anchorLat) {
         return coords.map(function (pt) {
             return [
@@ -61,9 +61,6 @@
             ];
         });
     }
-
-    var mobileInitAnchorLng = minLng + spanLng * 0.30;
-    var mobileInitAnchorLat = minLat + spanLat * 0.26;
 
     window.__SHIMODA_MAP_CONFIG__ = {
         APP_TITLE: '敷根公園フェスマップ',
@@ -111,9 +108,9 @@
             initUseFitBounds: true,
             /** 起動時 fit の対象（中心寄り・イラスト四隅は画面外にはみ出す） */
             initViewCoordinates: scaleMapCoords(mapCoords, 0.68),
-            /** スマホ: 左下寄りを基準に強く寄せる（fit が maxZoom で頭打ちでも効く） */
+            /** スマホ: グラウンド（公園中心）基準でやや寄せる */
             initViewCoordinatesMobile: scaleMapCoordsAround(
-                mapCoords, 0.36, mobileInitAnchorLng, mobileInitAnchorLat
+                mapCoords, 0.50, PARK_LNG, PARK_LAT
             ),
             /** fitBounds 初期表示のズーム上限 */
             initFitMaxZoom: 19.85,
@@ -123,23 +120,23 @@
                 bottom: 0,
                 left: 0,
                 right: 0,
-                mobileTop: 22,
-                mobileBottom: 118,
-                mobileLeft: 0,
-                mobileRight: 52
+                mobileTop: 28,
+                mobileBottom: 128,
+                mobileLeft: 8,
+                mobileRight: 28
             },
             /** 画面上の見え方調整（px）— 左コントロール／下カードシート分 */
             initViewOffset: [28, 6],
-            /** スマホ: 下シート分 Y、テニスコート側が入る X */
-            initViewOffsetMobile: [-98, 36],
+            /** スマホ: 下シート分 Y、グラウンド中心が画面中央付近に来る微調整 */
+            initViewOffsetMobile: [-36, 42],
             /**
              * fitBounds 後の追い込み（maxZoom 上限で fit だけでは変わらない分）
              * centerLng/Lat は度単位のパン（西・南がマイナス）
              */
             initMobilePostFit: {
-                extraZoom: 0.62,
-                centerLng: -spanLng * 0.11,
-                centerLat: -spanLat * 0.09
+                extraZoom: 0.22,
+                centerLng: 0,
+                centerLat: 0
             },
             maxBounds: [
                 [minLng - padLng, minLat - padLat],
