@@ -46,6 +46,12 @@ cp web/secrets.example.js web/secrets.local.js
 npx --yes serve web
 ```
 
+### Windows で作業フォルダを一式整える
+
+`C:\Users\vagab\Desktop\Stand\01.案件\フェスマップ` などに QGIS 元データ・GeoTIFF 書き出し・ローカル起動をまとめる手順:
+
+- [local-kit/windows/フェスマップ_ローカル構築.md](local-kit/windows/フェスマップ_ローカル構築.md)
+
 ---
 
 ## 関連ドキュメント
