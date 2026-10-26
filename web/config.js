@@ -162,11 +162,20 @@
             kids_play: 'kids_play.png',
             ws_indoor: 'ws_indoor.png',
             pool: 'pool.png',
-            park_office: 'park_office.png'
+            park_office: 'park_office.png',
+            /** 移動図書館（ベースは事務所ピン＋本アイコン重ね） */
+            library: 'park_office.png'
         },
-        /** シートの category が空・誤りでも PNG ピンに揃える（emoji 列は使わない） */
+        /**
+         * シート category より優先するピン PNG（プール等と同型の既存ベースのみ）
+         * 白丸内アイコンは FIXED_PIN_OVERLAY_BY_STORE_ID
+         */
         FIXED_PIN_CATEGORY_BY_STORE_ID: {
-            kids_ground: 'kids_play'
+            kids_ground: 'kids_play',
+            ws_kids_core: 'kids_play',
+            office_nature_walk: 'stage',
+            library_mobile: 'pool',
+            ws_indoor_2: 'ws_indoor'
         },
         FIXED_PIN_CATEGORY_BY_NAME: {
             'グラウンド': 'kids_play',
@@ -175,8 +184,16 @@
         /** シートに store_id が無いときの補完（L 列 = kids_ground 推奨） */
         FIXED_STORE_ID_BY_NAME: {
             'グラウンド': 'kids_ground',
-            'みんなでサッカー！！': 'kids_ground'
+            'みんなでサッカー！！': 'kids_ground',
+            '移動図書館': 'library_mobile',
+            'キッズコアトレーニング': 'ws_kids_core'
         },
+        /** 名称の部分一致で store_id（完全一致の次に評価） */
+        FIXED_STORE_ID_BY_NAME_CONTAINS: [
+            { contains: 'キッズコア', storeId: 'ws_kids_core' }
+        ],
+        /** 固定ピン画像の cache bust（SVG 差し替え時に更新） */
+        ASSET_VERSION: '20261027-pin-standard-base',
         /** 固定マスタに行が無い／store_id 空でもピンを出す */
         FIXED_MASTER_FALLBACK: [
             {
@@ -185,18 +202,38 @@
                 lat: 34.6819033380519,
                 lng: 138.931956231428,
                 category: 'kids_play'
+            },
+            {
+                storeId: 'library_mobile',
+                name: '移動図書館',
+                lat: 34.682426,
+                lng: 138.93102,
+                category: 'library'
             }
         ],
-        /** store_id ごとのマップピン画像（`assets/...` または HTTPS） */
+        /**
+         * 丸型ピン用ロゴ（店舗同型）— `assets/...` または HTTPS
+         * 通常固定ピンは FIXED_PIN_ICONS の PNG ベース＋下記オーバーレイ
+         */
         FIXED_PIN_ICON_BY_STORE_ID: {
             kids_wakuwaku: 'assets/kids/sponsor-shimoda-baby-kids.webp'
         },
-        /** 丸型ピン内に絵文字（画像より優先） */
+        /** store_id ごとに白丸内へ重ねるアイコン（ファイル名 or `assets/...`） */
+        FIXED_PIN_OVERLAY_BY_STORE_ID: {
+            office_nature_walk: 'binoculars.svg',
+            ws_kids_core: 'kids-core-jump.svg',
+            ws_indoor_2: 'workshop-palette.svg',
+            library_mobile: 'book-open.svg'
+        },
+        FIXED_PIN_OVERLAY_EMOJI_FALLBACK: {
+            ws_kids_core: '🤸'
+        },
+        /** 固定ピン白丸内の絵文字（オーバーレイ画像より優先） */
         FIXED_PIN_EMOJI_BY_STORE_ID: {
             kids_ground: '⚽'
         },
-        /** 丸型ピン（店舗同型）の中にロゴ画像または絵文字を表示 */
-        FIXED_PIN_CIRCULAR_LOGO_STORE_IDS: ['kids_wakuwaku', 'kids_ground'],
+        /** 丸型ピン（店舗同型）— わくわく広場のみ */
+        FIXED_PIN_CIRCULAR_LOGO_STORE_IDS: ['kids_wakuwaku'],
         /**
          * 固定スポットのモーダル表示（フライヤー文言のみ等）
          * @see web/docs/sheets/fixed_master_ALL_seed.csv kids_ground 行
@@ -248,6 +285,24 @@
             VENUE: 6, EVENT_DATE: 7, SORT_ORDER: 8, HIDDEN: 9, IMAGE_URL: 10,
             STORE_ID: 11
         },
+        /**
+         * event_schedule に行が無いときの補完（store_id が既にあれば追加しない）
+         * @see web/docs/sheets/event_schedule_2026-11-03_seed.csv
+         */
+        EVENT_SCHEDULE_FALLBACK: [
+            {
+                startTime: '11:00',
+                endTime: '12:00',
+                title: 'みんなでサッカー！！',
+                performer: '',
+                description: '申込なし、飛び入りOK！みんなで楽しくミニゲーム！終了後12:00 - 16:00までグラウンド無料開放！',
+                venue: '健康広場',
+                eventDate: '2026-11-03',
+                sortOrder: 7,
+                imageUrl: '',
+                storeId: 'kids_ground'
+            }
+        ],
 
         /** 探す: シート category → 表示名。ピンは非表示にせず強調だけ */
         /** 飲食タブのズーム対象（未設定時は category=フードエリア / store_id food_*） */
@@ -258,14 +313,16 @@
         /** 遊ぶタブのフライヤーカード表示順（固定マスタ store_id。image_url / image_url_2 を横並び） */
         PLAY_TAB_STORE_IDS: [
             'kids_wakuwaku',
+            'library_mobile',
             'ws_kids_core',
+            'ws_indoor_2',
             'pool_shikine',
             'office_nature_walk',
             'stage_outdoor'
         ],
 
         /** 遊ぶタブで image_url + image_url_2 を1枚のカード内に横並び表示 */
-        PLAY_TAB_DUAL_FLYER_STORE_IDS: ['stage_outdoor'],
+        PLAY_TAB_DUAL_FLYER_STORE_IDS: ['stage_outdoor', 'ws_indoor_2'],
 
         /**
          * 遊ぶタブ用フライヤー（固定マスタ未取得・画像列空のときの同梱 assets）
@@ -280,6 +337,16 @@
                 emoji: '🎈',
                 imageUrl: 'assets/kids/wakuwaku-hiroba.webp'
             },
+            library_mobile: {
+                name: '移動図書館',
+                lat: 34.682426,
+                lng: 138.93102,
+                category: 'library',
+                emoji: '📚',
+                imageUrl: 'assets/library/mobile-library-flyer.jpg',
+                desc: '公園で本との出会いを楽しもう！',
+                address: '飲食エリア'
+            },
             ws_kids_core: {
                 name: 'キッズコアトレーニング',
                 lat: 34.6823658382876,
@@ -288,6 +355,16 @@
                 emoji: '🏃',
                 imageUrl: 'assets/workshops/kids-core-training.webp',
                 url: 'https://logoform.jp/f/srRs9'
+            },
+            ws_indoor_2: {
+                name: '屋内ワークショップ（事務所内）',
+                lat: 34.6823942346664,
+                lng: 138.930745527896,
+                category: 'ws_indoor',
+                emoji: '🎨',
+                imageUrl: 'assets/workshops/ws-mini-haniwa.jpg',
+                imageUrl2: 'assets/workshops/ws-uehara-art-workshop.png',
+                desc: '【ミニミニはにわづくり】文化財を学びながら、ねんどではにわをつくろう！（事務所内）／【上原美術館連携アートワークショップ】フォトフレーム・缶バッジづくり（事務所内）'
             },
             pool_shikine: {
                 name: '敷根プール（無料開放）',
@@ -323,7 +400,8 @@
             { category: 'kids_play', label: 'キッズ' },
             { category: 'ws_indoor', label: 'ワークショップ' },
             { category: 'pool', label: 'プール' },
-            { category: 'park_office', label: '事務所' }
+            { category: 'park_office', label: '事務所' },
+            { category: 'library', label: '図書' }
         ],
 
         PARK_INFO: {

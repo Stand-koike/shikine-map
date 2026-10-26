@@ -5,6 +5,7 @@
 | ファイル | 説明 |
 |----------|------|
 | `index.html` | マップアプリ本体 |
+| `fixed-pins.js` | 固定施設ピン（store_id 補完・画像 URL・マーカー DOM） |
 | `config.js` | 地図・表示の設定 |
 | `line-contract.js` | データ形式の定義 |
 | `map.webp` | イラスト地図画像 |

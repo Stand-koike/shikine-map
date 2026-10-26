@@ -9,7 +9,7 @@
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
     <script src="line-contract.js"></script>
     <!-- 四隅変更時は ?v= を更新（GitHub Pages の config.js 長期キャッシュ対策） -->
-    <script src="config.js?v=20261027-kids-ground"></script>
+    <script src="config.js?v=20261027-schedule-soccer"></script>
     <script src="config.local.js" onerror="void 0"></script>
     <script>
         (function () {
@@ -584,6 +584,36 @@
         }
         .custom-marker--fixed img {
             display: block;
+            pointer-events: none;
+        }
+        .fixed-pin-stack {
+            position: relative;
+            flex-shrink: 0;
+        }
+        .fixed-pin-stack .fixed-pin-base {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .fixed-pin-stack .fixed-pin-overlay {
+            position: absolute;
+            left: 50%;
+            top: 36%;
+            transform: translate(-50%, -50%);
+            width: 52%;
+            height: 52%;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 2;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+        }
+        .fixed-pin-stack .fixed-pin-overlay-emoji {
+            position: absolute;
+            left: 50%;
+            top: 36%;
+            transform: translate(-50%, -50%);
+            line-height: 1;
             pointer-events: none;
         }
         .custom-marker--fixed.active {
@@ -2062,6 +2092,7 @@
 </div>
 
 <!-- secrets / config は <head> で読み込み済み -->
+<script src="fixed-pins.js?v=20261027-refactor"></script>
 <script>
 'use strict';
 
@@ -2298,80 +2329,7 @@ function parseSheetDate(tsVal) {
     return ts;
 }
 
-/** マスタ・posts 双方で store_id キーを一致（日本語店舗名可・前後・連続空白のみ正規化） */
-function normalizeStoreId_(raw) {
-    if (raw == null || String(raw).trim() === '') return '';
-    return String(raw).replace(/\s+/g, ' ').trim();
-}
-
-/** 固定マスタの store_id（シート未設定時は名称・座標から補完） */
-function resolveFixedPresetStoreId_(spot) {
-    const sid = normalizeStoreId_(spot?.storeId);
-    if (sid) return sid;
-    const byName = CONFIG.FIXED_STORE_ID_BY_NAME || {};
-    const name = (spot?.name || '').trim();
-    if (name && byName[name]) return byName[name];
-    const lat = spot?.coords?.[1];
-    const lng = spot?.coords?.[0];
-    if (lat == null || lng == null) return '';
-    const eps = 0.00004;
-    for (const row of CONFIG.FIXED_MASTER_FALLBACK || []) {
-        const key = normalizeStoreId_(row.storeId);
-        if (!key || row.lat == null || row.lng == null) continue;
-        if (Math.abs(lat - Number(row.lat)) < eps && Math.abs(lng - Number(row.lng)) < eps) return key;
-    }
-    return '';
-}
-
-function applyFixedSpotIdentity_(spot) {
-    const sid = resolveFixedPresetStoreId_(spot);
-    if (!sid) return spot;
-    return {
-        ...spot,
-        storeId: sid,
-        id: `fixed_spot_${sid.replace(/\s+/g, '_')}`
-    };
-}
-
-function mergeFixedMasterFallback_(spots) {
-    const list = spots.map(applyFixedSpotIdentity_);
-    const have = new Set(
-        list.map(s => resolveFixedPresetStoreId_(s) || normalizeStoreId_(s.storeId)).filter(Boolean)
-    );
-    (CONFIG.FIXED_MASTER_FALLBACK || []).forEach(row => {
-        const sid = normalizeStoreId_(row.storeId);
-        if (!sid || have.has(sid)) return;
-        const lat = Number(row.lat);
-        const lng = Number(row.lng);
-        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-        list.push(applyFixedSpotIdentity_({
-            id: `fixed_spot_${sid}`,
-            storeId: sid,
-            name: row.name || sid,
-            name_en: row.name_en || row.name || sid,
-            category: row.category || '',
-            coords: [lng, lat],
-            emoji: row.emoji || '',
-            desc: row.desc || '',
-            hours: row.hours || '',
-            address: row.address || '',
-            isFixed: true
-        }));
-        have.add(sid);
-    });
-    return list;
-}
-
-/** 固定ピン PNG（FIXED_PIN_ICONS）用 category — シートの emoji 列は無視して統一デザイン */
-function effectiveFixedPinCategory_(spot) {
-    const byStore = CONFIG.FIXED_PIN_CATEGORY_BY_STORE_ID || {};
-    const storeKey = resolveFixedPresetStoreId_(spot);
-    if (storeKey && byStore[storeKey]) return byStore[storeKey];
-    const byName = CONFIG.FIXED_PIN_CATEGORY_BY_NAME || {};
-    const name = (spot.name || '').trim();
-    if (name && byName[name]) return byName[name];
-    return spot.category;
-}
+/** store_id / 固定ピン — @see fixed-pins.js */
 
 /** タイムテーブル store_id。カンマ区切りで複数ピンを強調できる */
 function parseStoreIdList_(raw) {
@@ -2752,9 +2710,45 @@ const ScheduleModule = {
         document.body.appendChild(script);
     },
 
+    _mergeFallback(items) {
+        const fallbacks = CONFIG.EVENT_SCHEDULE_FALLBACK || [];
+        if (!fallbacks.length) return items;
+
+        const hasStoreId = (rawSid) => {
+            const key = normalizeStoreId_(rawSid);
+            if (!key) return false;
+            return items.some(it => parseStoreIdList_(it.storeId).indexOf(key) !== -1);
+        };
+
+        const out = items.slice();
+        fallbacks.forEach(row => {
+            if (row.storeId && hasStoreId(row.storeId)) return;
+            out.push({
+                startTime: row.startTime || '',
+                endTime: row.endTime || '',
+                title: row.title || '',
+                performer: row.performer || '',
+                description: row.description || '',
+                venue: row.venue || '',
+                eventDate: row.eventDate || '',
+                sortOrder: Number.isFinite(Number(row.sortOrder)) ? Number(row.sortOrder) : 9999,
+                imageUrl: row.imageUrl ? resolveSheetMediaUrl(row.imageUrl) : '',
+                storeId: row.storeId || ''
+            });
+        });
+
+        out.sort((a, b) => {
+            const d = String(a.eventDate || '').localeCompare(String(b.eventDate || ''));
+            if (d) return d;
+            if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+            return ScheduleModule._timeToMinutes(a.startTime) - ScheduleModule._timeToMinutes(b.startTime);
+        });
+        return out;
+    },
+
     onLoaded(json) {
         clearTimeout(this._fetchTimeout);
-        const items = this._parse(json);
+        const items = this._mergeFallback(this._parse(json));
         const hash = JSON.stringify(items);
         if (hash === State.lastScheduleHash) return;
         State.lastScheduleHash = hash;
@@ -4689,29 +4683,12 @@ const UIModule = {
         State.activeMarkers.push(marker);
     },
 
-    _resolveFixedPinIconSrc(spot) {
-        const byStore = CONFIG.FIXED_PIN_ICON_BY_STORE_ID || {};
-        const storeKey = resolveFixedPresetStoreId_(spot);
-        if (storeKey && byStore[storeKey]) return byStore[storeKey];
-        if (storeKey === 'kids_wakuwaku' && spot.imageUrl3) return spot.imageUrl3;
-        const cat = effectiveFixedPinCategory_(spot);
-        const icons = CONFIG.FIXED_PIN_ICONS || {};
-        const iconFile = icons[cat] || null;
-        return iconFile ? `assets/fixed-pins/${iconFile}` : null;
-    },
-
-    _fixedPinUsesCircularLogo(spot) {
-        const ids = CONFIG.FIXED_PIN_CIRCULAR_LOGO_STORE_IDS || [];
-        const key = resolveFixedPresetStoreId_(spot);
-        return key && ids.indexOf(key) !== -1;
-    },
-
     _bindFixedMarkerClick(spot, el) {
         el.addEventListener('click', e => {
             e.stopPropagation();
             document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('active'));
             el.classList.add('active');
-            const noModal = (CONFIG.FIXED_PIN_NO_MODAL || []).indexOf(spot.category) !== -1;
+            const noModal = FixedPinModule.categorySkipsModal(spot.category);
             if (noModal) {
                 if (MapModule.flyTo) MapModule.flyTo(spot);
                 return;
@@ -4733,8 +4710,7 @@ const UIModule = {
 
         const clip = document.createElement('div');
         clip.className = 'marker-clip';
-        const storeKey = resolveFixedPresetStoreId_(spot);
-        const pinEmoji = storeKey && (CONFIG.FIXED_PIN_EMOJI_BY_STORE_ID || {})[storeKey];
+        const pinEmoji = FixedPinModule.pinEmojiForStore(FixedPinModule.resolveStoreId(spot));
         if (pinEmoji) {
             const emojiEl = document.createElement('span');
             emojiEl.className = 'marker-emoji marker-emoji--pin';
@@ -4742,7 +4718,7 @@ const UIModule = {
             emojiEl.textContent = pinEmoji;
             clip.appendChild(emojiEl);
         } else {
-            const logoSrc = this._resolveFixedPinIconSrc(spot);
+            const logoSrc = FixedPinModule.circularLogoSrc(spot);
             if (logoSrc) {
                 const img = document.createElement('img');
                 img.src = logoSrc;
@@ -4763,39 +4739,15 @@ const UIModule = {
     },
 
     _appendFixedHtmlMarker(spot, spotsVisible) {
-        if (this._fixedPinUsesCircularLogo(spot)) {
+        if (FixedPinModule.usesCircularLogo(spot)) {
             this._appendFixedCircularLogoMarker(spot, spotsVisible);
             return;
         }
-        const pinSrc = this._resolveFixedPinIconSrc(spot);
         const el = document.createElement('div');
         el.className = 'custom-marker custom-marker--fixed';
         el.id = `marker-${spot.id}`;
         if (!spotsVisible) el.style.display = 'none';
-
-        const visual = document.createElement('div');
-        visual.className = 'fixed-pin-visual';
-        const size = CONFIG.FIXED_PIN_SIZE || 30;
-        if (pinSrc) {
-            const img = document.createElement('img');
-            img.src = pinSrc;
-            img.alt = '';
-            img.style.cssText = `width:${size}px;height:${size}px;object-fit:contain;`;
-            img.onerror = () => {
-                img.style.display = 'none';
-                const fallback = document.createElement('span');
-                fallback.style.fontSize = `${Math.round(size * 0.7)}px`;
-                fallback.textContent = spot.emoji || '📍';
-                visual.appendChild(fallback);
-            };
-            visual.appendChild(img);
-        } else {
-            const fallback = document.createElement('span');
-            fallback.style.fontSize = `${Math.round(size * 0.7)}px`;
-            fallback.textContent = spot.emoji || '📍';
-            visual.appendChild(fallback);
-        }
-        el.appendChild(visual);
+        el.appendChild(FixedPinModule.createTeardropVisual(spot));
 
         this._bindFixedMarkerClick(spot, el);
 
