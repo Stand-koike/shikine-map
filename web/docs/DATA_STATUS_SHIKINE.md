@@ -1,7 +1,7 @@
 # 敷根フェスマップ — いま揃っている情報（位置だけ後入れ用）
 
 **ピン lat/lng・イラスト四隅は 2026-10-24 に QGIS `park_4326.tif` / `point.csv` で確定**（→ [MAP_GEOTIFF_SHIKINE.md](MAP_GEOTIFF_SHIKINE.md)、シード [sheets/point_official_2026-10-24.csv](sheets/point_official_2026-10-24.csv)）。  
-**Google スプレッドシート**は `food_vendors_seed.csv` / `fixed_master_ALL_seed.csv` を貼り直す必要あり（リポジトリだけではシートは自動更新されない）。
+**Google スプレッドシート**は基本リポジトリの CSV を貼り直す運用。2026-10-27 時点で本番ブックに **`event_schedule` サッカー行（11:00–12:00 / `kids_ground`）** と **固定マスタ「みんなでサッカー！！」行** を反映済み。
 
 専用ブック（作成済み）:
 

@@ -33,7 +33,8 @@
 - [sheets/店舗マスタ_ヘッダー.csv](sheets/店舗マスタ_ヘッダー.csv)
 - [sheets/固定マスタ_ヘッダー.csv](sheets/固定マスタ_ヘッダー.csv)
 
-データ本体はブックに投入済み。リポジトリ側の控えは [DATA_STATUS_SHIKINE.md](DATA_STATUS_SHIKINE.md)。
+データ本体はブックに投入済み。リポジトリ側の控えは [DATA_STATUS_SHIKINE.md](DATA_STATUS_SHIKINE.md)。  
+`event_schedule` に **みんなでサッカー！！ 11:00–12:00**（L 列 `kids_ground`）が無いとタイムテーブルに出ません（アプリの `EVENT_SCHEDULE_FALLBACK` は二重表示防止の補完のみ）。
 
 ---
 
