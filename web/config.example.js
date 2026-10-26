@@ -71,6 +71,15 @@
 
         POLL_INTERVAL: 30000,
 
+        /** 起動スプラッシュ動画（新エリアでは false または MP4 を差し替え） */
+        SPLASH_VIDEO: {
+            enabled: false,
+            src: 'assets/splash-shikine.mp4',
+            storageKey: 'shikine_map_splash_seen_v1',
+            skipLabel: 'スキップ',
+            maxWaitMs: 15000
+        },
+
         POSTS_SHEET: secrets.POSTS_SHEET || 'posts',
         LIVE_POST_POLL_INTERVAL: 30000,
 

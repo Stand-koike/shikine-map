@@ -283,6 +283,15 @@
             phone: '0558-23-6333'
         },
 
+        /** 起動スプラッシュ動画（セッション初回のみ・タップでスキップ可） */
+        SPLASH_VIDEO: {
+            enabled: true,
+            src: 'assets/splash-shikine.mp4?v=1',
+            storageKey: 'shikine_map_splash_seen_v1',
+            skipLabel: 'スキップ',
+            maxWaitMs: 15000
+        },
+
         /** QGIS 公式点の控え（デバッグ時のみ true） */
         SURVEY_POINTS: {
             enabled:    false,

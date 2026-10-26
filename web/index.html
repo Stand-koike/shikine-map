@@ -114,6 +114,51 @@
         }
 
         /* ============================================================
+           SPLASH VIDEO (起動ムービー)
+           ============================================================ */
+        #splash-overlay {
+            position: fixed; inset: 0;
+            z-index: 10050;
+            background: #000;
+            display: none;
+            align-items: center; justify-content: center;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #splash-overlay.splash-visible {
+            display: flex;
+        }
+        #splash-overlay.splash-hiding {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+        #splash-video {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+        .splash-skip {
+            position: absolute;
+            top: max(16px, env(safe-area-inset-top, 0px));
+            right: max(16px, env(safe-area-inset-right, 0px));
+            z-index: 2;
+            pointer-events: auto;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.45);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 24px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: bold;
+            font-family: inherit;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .splash-skip:active { transform: scale(0.96); }
+
+        /* ============================================================
            LEFT CONTROLS (言語 / フィルター / レイヤー)
            ============================================================ */
         .controls-container {
@@ -1700,6 +1745,11 @@
     </style>
 </head>
 <body class="cards-sheet-collapsed">
+
+<div id="splash-overlay" aria-hidden="true">
+    <video id="splash-video" muted playsinline preload="auto"></video>
+    <button type="button" class="splash-skip" id="splash-skip" aria-label="スキップ">スキップ</button>
+</div>
 
 <div id="loading">
     <i class="fas fa-water fa-spin"></i> Loading...
@@ -5483,12 +5533,138 @@ const UIModule = {
 };
 
 // ================================================================
+// SplashModule — 起動スプラッシュ動画（セッション初回）
+// ================================================================
+const SplashModule = {
+    _dismissed: true,
+    _dismissing: false,
+    _maxWaitTimer: null,
+
+    isDismissed() {
+        return this._dismissed;
+    },
+
+    init() {
+        const cfg = CONFIG.SPLASH_VIDEO || {};
+        const overlay = document.getElementById('splash-overlay');
+        const video = document.getElementById('splash-video');
+        const skipBtn = document.getElementById('splash-skip');
+
+        if (!cfg.enabled || !cfg.src || !overlay || !video) {
+            this._dismissed = true;
+            if (overlay) overlay.style.display = 'none';
+            return;
+        }
+
+        const storageKey = cfg.storageKey || 'shikine_map_splash_seen_v1';
+        try {
+            if (sessionStorage.getItem(storageKey) === '1') {
+                this._dismissed = true;
+                overlay.style.display = 'none';
+                return;
+            }
+        } catch (e) { /* private mode 等 */ }
+
+        if (skipBtn && cfg.skipLabel) skipBtn.textContent = cfg.skipLabel;
+
+        const reducedMotion = window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reducedMotion) {
+            try { sessionStorage.setItem(storageKey, '1'); } catch (e) { /* ignore */ }
+            this._dismissed = true;
+            overlay.style.display = 'none';
+            return;
+        }
+
+        this._dismissed = false;
+        overlay.style.display = '';
+        overlay.classList.add('splash-visible');
+        overlay.setAttribute('aria-hidden', 'false');
+
+        const onSkip = (e) => {
+            if (e && e.target === skipBtn) e.stopPropagation();
+            this.dismiss();
+        };
+        overlay.addEventListener('click', onSkip);
+        if (skipBtn) skipBtn.addEventListener('click', onSkip);
+
+        video.src = cfg.src;
+        video.addEventListener('ended', () => this.dismiss());
+        video.addEventListener('error', () => {
+            console.warn('[SplashModule] 動画読込エラー — スキップ');
+            this.dismiss();
+        });
+
+        const maxWait = Number(cfg.maxWaitMs);
+        if (Number.isFinite(maxWait) && maxWait > 0) {
+            this._maxWaitTimer = setTimeout(() => {
+                console.warn('[SplashModule] maxWaitMs — スキップ');
+                this.dismiss();
+            }, maxWait);
+        }
+
+        const tryPlay = () => {
+            const p = video.play();
+            if (p && typeof p.catch === 'function') {
+                p.catch(() => {
+                    video.addEventListener('canplay', () => {
+                        video.play().catch(() => this.dismiss());
+                    }, { once: true });
+                });
+            }
+        };
+        tryPlay();
+    },
+
+    dismiss() {
+        if (this._dismissed || this._dismissing) return;
+        this._dismissing = true;
+
+        const cfg = CONFIG.SPLASH_VIDEO || {};
+        const storageKey = cfg.storageKey || 'shikine_map_splash_seen_v1';
+        try {
+            sessionStorage.setItem(storageKey, '1');
+        } catch (e) { /* ignore */ }
+
+        if (this._maxWaitTimer) {
+            clearTimeout(this._maxWaitTimer);
+            this._maxWaitTimer = null;
+        }
+
+        const overlay = document.getElementById('splash-overlay');
+        const video = document.getElementById('splash-video');
+        if (video) {
+            try { video.pause(); } catch (e) { /* ignore */ }
+        }
+
+        const finish = () => {
+            this._dismissed = true;
+            this._dismissing = false;
+            if (overlay) {
+                overlay.classList.remove('splash-visible', 'splash-hiding');
+                overlay.style.display = 'none';
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+            if (typeof App !== 'undefined' && App._tryHideLoading) App._tryHideLoading();
+        };
+
+        if (overlay) {
+            overlay.classList.add('splash-hiding');
+            setTimeout(finish, 380);
+        } else {
+            finish();
+        }
+    }
+};
+
+// ================================================================
 // App — エントリポイント・イベント連携
 // ================================================================
 const App = {
     _selectedCategories: new Set(),
     _seenFilterCategories: new Set(),
     _postsInitialized: false,
+    _dataReadyCalled: false,
 
     isFoodAreaSpot(spot) {
         const ids = (CONFIG.FOOD_AREA_STORE_IDS || []).map(normalizeStoreId_).filter(Boolean);
@@ -5649,7 +5825,16 @@ const App = {
         });
     },
 
+    _tryHideLoading() {
+        if (!this._dataReadyCalled) return;
+        if (!SplashModule.isDismissed()) return;
+        const loading = document.getElementById('loading');
+        if (loading) loading.style.display = 'none';
+    },
+
     init() {
+        SplashModule.init();
+
         // ?refresh=1 パラメータで強制再取得 (AppSheet Webhook から呼び出し可能)
         if (new URLSearchParams(location.search).get('refresh') === '1') {
             State.lastDataHash = '';
@@ -5692,7 +5877,8 @@ const App = {
     // データ取得完了後のメイン処理
     _onDataReady() {
         const spots = State.allSpots;
-        document.getElementById('loading').style.display = 'none';
+        this._dataReadyCalled = true;
+        this._tryHideLoading();
 
         if (!this._postsInitialized) {
             this._postsInitialized = true;
