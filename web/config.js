@@ -283,12 +283,14 @@
             phone: '0558-23-6333'
         },
 
-        /** 起動スプラッシュ動画（セッション初回のみ・タップでスキップ可） */
+        /** 起動スプラッシュ動画（モバイル・セッション初回のみ） */
         SPLASH_VIDEO: {
             enabled: true,
-            src: 'assets/splash-shikine.mp4?v=1',
-            storageKey: 'shikine_map_splash_seen_v1',
+            mobileOnly: true,
+            src: 'assets/splash-shikine.mp4?v=2',
+            storageKey: 'shikine_map_splash_seen_v2',
             skipLabel: 'スキップ',
+            tapHint: 'タップして再生',
             maxWaitMs: 15000
         },
 

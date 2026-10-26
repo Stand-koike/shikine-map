@@ -157,6 +157,22 @@
             -webkit-backdrop-filter: blur(6px);
         }
         .splash-skip:active { transform: scale(0.96); }
+        .splash-tap-hint {
+            position: absolute;
+            left: 50%; bottom: max(28px, env(safe-area-inset-bottom, 0px));
+            transform: translateX(-50%);
+            z-index: 2;
+            display: none;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        #splash-overlay.splash-needs-tap .splash-tap-hint {
+            display: block;
+        }
 
         /* ============================================================
            LEFT CONTROLS (言語 / フィルター / レイヤー)
@@ -1747,7 +1763,8 @@
 <body class="cards-sheet-collapsed">
 
 <div id="splash-overlay" aria-hidden="true">
-    <video id="splash-video" muted playsinline preload="auto"></video>
+    <video id="splash-video" muted playsinline webkit-playsinline autoplay preload="auto"></video>
+    <p class="splash-tap-hint" id="splash-tap-hint" aria-hidden="true">タップして再生</p>
     <button type="button" class="splash-skip" id="splash-skip" aria-label="スキップ">スキップ</button>
 </div>
 
@@ -5539,9 +5556,59 @@ const SplashModule = {
     _dismissed: true,
     _dismissing: false,
     _maxWaitTimer: null,
+    _awaitingTap: false,
+    _lastPointerMs: 0,
 
     isDismissed() {
         return this._dismissed;
+    },
+
+    _resolveVideoUrl(src) {
+        try {
+            return new URL(src, window.location.href).href;
+        } catch (e) {
+            return src;
+        }
+    },
+
+    _isMobileTarget(cfg) {
+        if (!cfg.mobileOnly) return true;
+        return !State.isPC;
+    },
+
+    _showTapHint(overlay, hintEl, cfg) {
+        this._awaitingTap = true;
+        if (overlay) overlay.classList.add('splash-needs-tap');
+        if (hintEl) {
+            hintEl.textContent = cfg.tapHint || 'タップして再生';
+            hintEl.setAttribute('aria-hidden', 'false');
+        }
+    },
+
+    _hideTapHint(overlay, hintEl) {
+        this._awaitingTap = false;
+        if (overlay) overlay.classList.remove('splash-needs-tap');
+        if (hintEl) hintEl.setAttribute('aria-hidden', 'true');
+    },
+
+    _prepareVideo(video) {
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.autoplay = true;
+    },
+
+    _attemptPlay(video, overlay, hintEl, cfg) {
+        const p = video.play();
+        if (!p || typeof p.then !== 'function') return;
+        p.then(() => {
+            this._hideTapHint(overlay, hintEl);
+        }).catch(() => {
+            this._showTapHint(overlay, hintEl, cfg);
+        });
     },
 
     init() {
@@ -5549,6 +5616,7 @@ const SplashModule = {
         const overlay = document.getElementById('splash-overlay');
         const video = document.getElementById('splash-video');
         const skipBtn = document.getElementById('splash-skip');
+        const hintEl = document.getElementById('splash-tap-hint');
 
         if (!cfg.enabled || !cfg.src || !overlay || !video) {
             this._dismissed = true;
@@ -5556,7 +5624,13 @@ const SplashModule = {
             return;
         }
 
-        const storageKey = cfg.storageKey || 'shikine_map_splash_seen_v1';
+        if (!this._isMobileTarget(cfg)) {
+            this._dismissed = true;
+            overlay.style.display = 'none';
+            return;
+        }
+
+        const storageKey = cfg.storageKey || 'shikine_map_splash_seen_v2';
         try {
             if (sessionStorage.getItem(storageKey) === '1') {
                 this._dismissed = true;
@@ -5566,33 +5640,49 @@ const SplashModule = {
         } catch (e) { /* private mode 等 */ }
 
         if (skipBtn && cfg.skipLabel) skipBtn.textContent = cfg.skipLabel;
-
-        const reducedMotion = window.matchMedia &&
-            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (reducedMotion) {
-            try { sessionStorage.setItem(storageKey, '1'); } catch (e) { /* ignore */ }
-            this._dismissed = true;
-            overlay.style.display = 'none';
-            return;
-        }
+        if (hintEl && cfg.tapHint) hintEl.textContent = cfg.tapHint;
 
         this._dismissed = false;
         overlay.style.display = '';
         overlay.classList.add('splash-visible');
         overlay.setAttribute('aria-hidden', 'false');
 
-        const onSkip = (e) => {
-            if (e && e.target === skipBtn) e.stopPropagation();
-            this.dismiss();
-        };
-        overlay.addEventListener('click', onSkip);
-        if (skipBtn) skipBtn.addEventListener('click', onSkip);
+        if (skipBtn) {
+            skipBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.dismiss();
+            });
+        }
 
-        video.src = cfg.src;
+        const onOverlayActivate = (e) => {
+            if (skipBtn && (e.target === skipBtn || skipBtn.contains(e.target))) return;
+            if (video.paused && !video.ended) {
+                e.preventDefault();
+                this._attemptPlay(video, overlay, hintEl, cfg);
+                return;
+            }
+            if (!video.paused && !video.ended) this.dismiss();
+        };
+        overlay.addEventListener('touchend', (e) => {
+            if (skipBtn && (e.target === skipBtn || skipBtn.contains(e.target))) return;
+            this._lastPointerMs = Date.now();
+            e.preventDefault();
+            onOverlayActivate(e);
+        }, { passive: false });
+        overlay.addEventListener('click', (e) => {
+            if (Date.now() - this._lastPointerMs < 450) return;
+            onOverlayActivate(e);
+        });
+
+        this._prepareVideo(video);
+        video.src = this._resolveVideoUrl(cfg.src);
+        video.load();
+
         video.addEventListener('ended', () => this.dismiss());
+        video.addEventListener('playing', () => this._hideTapHint(overlay, hintEl));
         video.addEventListener('error', () => {
-            console.warn('[SplashModule] 動画読込エラー — スキップ');
-            this.dismiss();
+            console.warn('[SplashModule] 動画読込エラー');
+            this._showTapHint(overlay, hintEl, cfg);
         });
 
         const maxWait = Number(cfg.maxWaitMs);
@@ -5603,17 +5693,10 @@ const SplashModule = {
             }, maxWait);
         }
 
-        const tryPlay = () => {
-            const p = video.play();
-            if (p && typeof p.catch === 'function') {
-                p.catch(() => {
-                    video.addEventListener('canplay', () => {
-                        video.play().catch(() => this.dismiss());
-                    }, { once: true });
-                });
-            }
-        };
-        tryPlay();
+        video.addEventListener('loadeddata', () => {
+            this._attemptPlay(video, overlay, hintEl, cfg);
+        }, { once: true });
+        this._attemptPlay(video, overlay, hintEl, cfg);
     },
 
     dismiss() {
@@ -5621,7 +5704,7 @@ const SplashModule = {
         this._dismissing = true;
 
         const cfg = CONFIG.SPLASH_VIDEO || {};
-        const storageKey = cfg.storageKey || 'shikine_map_splash_seen_v1';
+        const storageKey = cfg.storageKey || 'shikine_map_splash_seen_v2';
         try {
             sessionStorage.setItem(storageKey, '1');
         } catch (e) { /* ignore */ }
@@ -5633,15 +5716,17 @@ const SplashModule = {
 
         const overlay = document.getElementById('splash-overlay');
         const video = document.getElementById('splash-video');
+        const hintEl = document.getElementById('splash-tap-hint');
         if (video) {
             try { video.pause(); } catch (e) { /* ignore */ }
         }
+        this._hideTapHint(overlay, hintEl);
 
         const finish = () => {
             this._dismissed = true;
             this._dismissing = false;
             if (overlay) {
-                overlay.classList.remove('splash-visible', 'splash-hiding');
+                overlay.classList.remove('splash-visible', 'splash-hiding', 'splash-needs-tap');
                 overlay.style.display = 'none';
                 overlay.setAttribute('aria-hidden', 'true');
             }
