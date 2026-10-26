@@ -131,7 +131,8 @@
       "type": "Feature",
       "properties": {
         "id": 10,
-        "label": "グラウンド"
+        "label": "グラウンド",
+        "store_id": "kids_ground"
       },
       "geometry": {
         "type": "Point",

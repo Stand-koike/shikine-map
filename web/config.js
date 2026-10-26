@@ -52,7 +52,7 @@
         });
     }
 
-    /** 任意の基準点の周りに縮める（スマホで左下＝テニスコート寄りを見せる） */
+    /** 任意の基準点の周りに縮める（スマホの fit 範囲を基準点寄りにする） */
     function scaleMapCoordsAround(coords, factor, anchorLng, anchorLat) {
         return coords.map(function (pt) {
             return [
@@ -62,8 +62,9 @@
         });
     }
 
-    var mobileInitAnchorLng = minLng + spanLng * 0.30;
-    var mobileInitAnchorLat = minLat + spanLat * 0.26;
+    /** テニスコート寄り（公式点 トイレ(テニス) の南西を基準） */
+    var mobileInitAnchorLng = minLng + spanLng * 0.62;
+    var mobileInitAnchorLat = minLat + spanLat * 0.36;
 
     window.__SHIMODA_MAP_CONFIG__ = {
         APP_TITLE: '敷根公園フェスマップ',
@@ -111,13 +112,13 @@
             initUseFitBounds: true,
             /** 起動時 fit の対象（中心寄り・イラスト四隅は画面外にはみ出す） */
             initViewCoordinates: scaleMapCoords(mapCoords, 0.68),
-            /** スマホ: 左下寄りを基準に強く寄せる（fit が maxZoom で頭打ちでも効く） */
+            /** スマホ: テニスコート側を基準に寄せる（factor 大きい＝やや引き） */
             initViewCoordinatesMobile: scaleMapCoordsAround(
-                mapCoords, 0.36, mobileInitAnchorLng, mobileInitAnchorLat
+                mapCoords, 0.41, mobileInitAnchorLng, mobileInitAnchorLat
             ),
             /** fitBounds 初期表示のズーム上限 */
             initFitMaxZoom: 19.85,
-            initFitMaxZoomMobile: 20,
+            initFitMaxZoomMobile: 19.75,
             initViewPadding: {
                 top: 40,
                 bottom: 0,
@@ -131,15 +132,15 @@
             /** 画面上の見え方調整（px）— 左コントロール／下カードシート分 */
             initViewOffset: [28, 6],
             /** スマホ: 下シート分 Y、テニスコート側が入る X */
-            initViewOffsetMobile: [-98, 36],
+            initViewOffsetMobile: [-78, 52],
             /**
              * fitBounds 後の追い込み（maxZoom 上限で fit だけでは変わらない分）
              * centerLng/Lat は度単位のパン（西・南がマイナス）
              */
             initMobilePostFit: {
-                extraZoom: 0.62,
-                centerLng: -spanLng * 0.11,
-                centerLat: -spanLat * 0.09
+                extraZoom: 0.38,
+                centerLng: spanLng * 0.04,
+                centerLat: -spanLat * 0.06
             },
             maxBounds: [
                 [minLng - padLng, minLat - padLat],
@@ -163,12 +164,63 @@
             pool: 'pool.png',
             park_office: 'park_office.png'
         },
+        /** シートの category が空・誤りでも PNG ピンに揃える（emoji 列は使わない） */
+        FIXED_PIN_CATEGORY_BY_STORE_ID: {
+            kids_ground: 'kids_play'
+        },
+        FIXED_PIN_CATEGORY_BY_NAME: {
+            'グラウンド': 'kids_play',
+            'みんなでサッカー！！': 'kids_play'
+        },
+        /** シートに store_id が無いときの補完（L 列 = kids_ground 推奨） */
+        FIXED_STORE_ID_BY_NAME: {
+            'グラウンド': 'kids_ground',
+            'みんなでサッカー！！': 'kids_ground'
+        },
+        /** 固定マスタに行が無い／store_id 空でもピンを出す */
+        FIXED_MASTER_FALLBACK: [
+            {
+                storeId: 'kids_ground',
+                name: 'みんなでサッカー！！',
+                lat: 34.6819033380519,
+                lng: 138.931956231428,
+                category: 'kids_play'
+            }
+        ],
         /** store_id ごとのマップピン画像（`assets/...` または HTTPS） */
         FIXED_PIN_ICON_BY_STORE_ID: {
             kids_wakuwaku: 'assets/kids/sponsor-shimoda-baby-kids.webp'
         },
-        /** 丸型ピン（店舗同型）の中に FIXED_PIN_ICON_BY_STORE_ID の画像を表示 */
-        FIXED_PIN_CIRCULAR_LOGO_STORE_IDS: ['kids_wakuwaku'],
+        /** 丸型ピン内に絵文字（画像より優先） */
+        FIXED_PIN_EMOJI_BY_STORE_ID: {
+            kids_ground: '⚽'
+        },
+        /** 丸型ピン（店舗同型）の中にロゴ画像または絵文字を表示 */
+        FIXED_PIN_CIRCULAR_LOGO_STORE_IDS: ['kids_wakuwaku', 'kids_ground'],
+        /**
+         * 固定スポットのモーダル表示（フライヤー文言のみ等）
+         * @see web/docs/sheets/fixed_master_ALL_seed.csv kids_ground 行
+         */
+        FIXED_MODAL_BY_STORE_ID: {
+            kids_ground: {
+                name: 'みんなでサッカー！！',
+                name_en: 'Soccer with Everyone!!',
+                hours: '11:00 - 12:00',
+                hours_en: '11:00 - 12:00',
+                address: '健康広場',
+                address_en: 'Health Plaza',
+                desc: '申込なし、飛び入りOK！みんなで楽しくミニゲーム！\n終了後12:00 - 16:00までグラウンド無料開放！',
+                desc_en: 'No signup; drop-ins welcome! Fun mini-games together.\nGround open free 12:00–16:00 after the session!',
+                hideCategory: true,
+                hideSlider: true,
+                hideDescLabel: true,
+                hideNews: true,
+                hideTags: true,
+                hideStatus: true,
+                hideSponsor: true,
+                hideContactExtras: true
+            }
+        },
         /** モーダルに Instagram リンクを出す store_id */
         INSTAGRAM_BY_STORE_ID: {
             food_12kitchen: 'https://www.instagram.com/12kitchen_shimoda/?utm_source=ig_web_button_share_sheet',

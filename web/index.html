@@ -9,7 +9,7 @@
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
     <script src="line-contract.js"></script>
     <!-- 四隅変更時は ?v= を更新（GitHub Pages の config.js 長期キャッシュ対策） -->
-    <script src="config.js?v=20261024-mobile-init-v2"></script>
+    <script src="config.js?v=20261027-kids-ground"></script>
     <script src="config.local.js" onerror="void 0"></script>
     <script>
         (function () {
@@ -613,6 +613,24 @@
             padding: 2px;
             box-sizing: border-box;
             background: #fff;
+        }
+        .custom-marker--fixed-circle .marker-clip {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .custom-marker--fixed-circle .marker-emoji--pin {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            line-height: 1;
+        }
+        @media (max-width: 767px) {
+            .custom-marker--fixed-circle .marker-emoji--pin {
+                font-size: 18px;
+            }
         }
         .custom-marker--fixed-circle .marker-inner {
             transition: transform 0.2s ease;
@@ -2286,6 +2304,75 @@ function normalizeStoreId_(raw) {
     return String(raw).replace(/\s+/g, ' ').trim();
 }
 
+/** 固定マスタの store_id（シート未設定時は名称・座標から補完） */
+function resolveFixedPresetStoreId_(spot) {
+    const sid = normalizeStoreId_(spot?.storeId);
+    if (sid) return sid;
+    const byName = CONFIG.FIXED_STORE_ID_BY_NAME || {};
+    const name = (spot?.name || '').trim();
+    if (name && byName[name]) return byName[name];
+    const lat = spot?.coords?.[1];
+    const lng = spot?.coords?.[0];
+    if (lat == null || lng == null) return '';
+    const eps = 0.00004;
+    for (const row of CONFIG.FIXED_MASTER_FALLBACK || []) {
+        const key = normalizeStoreId_(row.storeId);
+        if (!key || row.lat == null || row.lng == null) continue;
+        if (Math.abs(lat - Number(row.lat)) < eps && Math.abs(lng - Number(row.lng)) < eps) return key;
+    }
+    return '';
+}
+
+function applyFixedSpotIdentity_(spot) {
+    const sid = resolveFixedPresetStoreId_(spot);
+    if (!sid) return spot;
+    return {
+        ...spot,
+        storeId: sid,
+        id: `fixed_spot_${sid.replace(/\s+/g, '_')}`
+    };
+}
+
+function mergeFixedMasterFallback_(spots) {
+    const list = spots.map(applyFixedSpotIdentity_);
+    const have = new Set(
+        list.map(s => resolveFixedPresetStoreId_(s) || normalizeStoreId_(s.storeId)).filter(Boolean)
+    );
+    (CONFIG.FIXED_MASTER_FALLBACK || []).forEach(row => {
+        const sid = normalizeStoreId_(row.storeId);
+        if (!sid || have.has(sid)) return;
+        const lat = Number(row.lat);
+        const lng = Number(row.lng);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+        list.push(applyFixedSpotIdentity_({
+            id: `fixed_spot_${sid}`,
+            storeId: sid,
+            name: row.name || sid,
+            name_en: row.name_en || row.name || sid,
+            category: row.category || '',
+            coords: [lng, lat],
+            emoji: row.emoji || '',
+            desc: row.desc || '',
+            hours: row.hours || '',
+            address: row.address || '',
+            isFixed: true
+        }));
+        have.add(sid);
+    });
+    return list;
+}
+
+/** 固定ピン PNG（FIXED_PIN_ICONS）用 category — シートの emoji 列は無視して統一デザイン */
+function effectiveFixedPinCategory_(spot) {
+    const byStore = CONFIG.FIXED_PIN_CATEGORY_BY_STORE_ID || {};
+    const storeKey = resolveFixedPresetStoreId_(spot);
+    if (storeKey && byStore[storeKey]) return byStore[storeKey];
+    const byName = CONFIG.FIXED_PIN_CATEGORY_BY_NAME || {};
+    const name = (spot.name || '').trim();
+    if (name && byName[name]) return byName[name];
+    return spot.category;
+}
+
 /** タイムテーブル store_id。カンマ区切りで複数ピンを強調できる */
 function parseStoreIdList_(raw) {
     if (raw == null || String(raw).trim() === '') return [];
@@ -2608,7 +2695,7 @@ const FixedModule = {
         ).join(',');
         if (hash === State.lastFixedDataHash) return;
         State.lastFixedDataHash = hash;
-        State.fixedSpots = spots;
+        State.fixedSpots = mergeFixedMasterFallback_(spots);
         App._onFixedDataReady();
     },
 
@@ -4604,17 +4691,18 @@ const UIModule = {
 
     _resolveFixedPinIconSrc(spot) {
         const byStore = CONFIG.FIXED_PIN_ICON_BY_STORE_ID || {};
-        const storeKey = normalizeStoreId_(spot.storeId);
+        const storeKey = resolveFixedPresetStoreId_(spot);
         if (storeKey && byStore[storeKey]) return byStore[storeKey];
-        if (spot.category === 'kids_play' && spot.imageUrl3) return spot.imageUrl3;
+        if (storeKey === 'kids_wakuwaku' && spot.imageUrl3) return spot.imageUrl3;
+        const cat = effectiveFixedPinCategory_(spot);
         const icons = CONFIG.FIXED_PIN_ICONS || {};
-        const iconFile = icons[spot.category] || null;
+        const iconFile = icons[cat] || null;
         return iconFile ? `assets/fixed-pins/${iconFile}` : null;
     },
 
     _fixedPinUsesCircularLogo(spot) {
         const ids = CONFIG.FIXED_PIN_CIRCULAR_LOGO_STORE_IDS || [];
-        const key = normalizeStoreId_(spot.storeId);
+        const key = resolveFixedPresetStoreId_(spot);
         return key && ids.indexOf(key) !== -1;
     },
 
@@ -4632,7 +4720,7 @@ const UIModule = {
         });
     },
 
-    _appendFixedCircularLogoMarker(spot, spotsVisible, logoSrc) {
+    _appendFixedCircularLogoMarker(spot, spotsVisible) {
         const si = getStatusInfo(val(spot, 'status'));
         const el = document.createElement('div');
         el.className = 'custom-marker custom-marker--fixed custom-marker--fixed-circle';
@@ -4645,11 +4733,24 @@ const UIModule = {
 
         const clip = document.createElement('div');
         clip.className = 'marker-clip';
-        const img = document.createElement('img');
-        img.src = logoSrc;
-        img.alt = '';
-        img.className = 'marker-image marker-image--contain';
-        clip.appendChild(img);
+        const storeKey = resolveFixedPresetStoreId_(spot);
+        const pinEmoji = storeKey && (CONFIG.FIXED_PIN_EMOJI_BY_STORE_ID || {})[storeKey];
+        if (pinEmoji) {
+            const emojiEl = document.createElement('span');
+            emojiEl.className = 'marker-emoji marker-emoji--pin';
+            emojiEl.setAttribute('aria-hidden', 'true');
+            emojiEl.textContent = pinEmoji;
+            clip.appendChild(emojiEl);
+        } else {
+            const logoSrc = this._resolveFixedPinIconSrc(spot);
+            if (logoSrc) {
+                const img = document.createElement('img');
+                img.src = logoSrc;
+                img.alt = '';
+                img.className = 'marker-image marker-image--contain';
+                clip.appendChild(img);
+            }
+        }
         inner.appendChild(clip);
         el.appendChild(inner);
 
@@ -4662,11 +4763,11 @@ const UIModule = {
     },
 
     _appendFixedHtmlMarker(spot, spotsVisible) {
-        const pinSrc = this._resolveFixedPinIconSrc(spot);
-        if (pinSrc && this._fixedPinUsesCircularLogo(spot)) {
-            this._appendFixedCircularLogoMarker(spot, spotsVisible, pinSrc);
+        if (this._fixedPinUsesCircularLogo(spot)) {
+            this._appendFixedCircularLogoMarker(spot, spotsVisible);
             return;
         }
+        const pinSrc = this._resolveFixedPinIconSrc(spot);
         const el = document.createElement('div');
         el.className = 'custom-marker custom-marker--fixed';
         el.id = `marker-${spot.id}`;
@@ -5236,17 +5337,36 @@ const UIModule = {
         if (!spot) return;
         State.currentSpot = spot;
 
-        const catRaw = spot.category != null ? String(spot.category).trim() : '';
-        const isKidsPlay = catRaw === 'kids_play';
-        let images = [spot.imageUrl, spot.imageUrl2, spot.imageUrl3].filter(Boolean);
-        if (isKidsPlay) images = [spot.imageUrl].filter(Boolean);
-        UIModule._buildSlider(images, spot.emoji);
+        const storeKey = resolveFixedPresetStoreId_(spot);
+        const modalPreset = storeKey ? (CONFIG.FIXED_MODAL_BY_STORE_ID || {})[storeKey] : null;
+        const view = modalPreset ? { ...spot, ...modalPreset } : spot;
 
-        document.getElementById('modal-cat').innerText   = val(spot, 'category');
-        document.getElementById('modal-title').innerText = val(spot, 'name');
+        const catRaw = spot.category != null ? String(spot.category).trim() : '';
+        const isKidsWakuwaku = storeKey === 'kids_wakuwaku';
+        const isKidsPlay = catRaw === 'kids_play';
+        const sliderEl = document.getElementById('modal-slider');
+        if (modalPreset?.hideSlider) {
+            if (sliderEl) sliderEl.style.display = 'none';
+            UIModule._buildSlider([], '');
+        } else {
+            if (sliderEl) sliderEl.style.display = '';
+            let images = [view.imageUrl, view.imageUrl2, view.imageUrl3].filter(Boolean);
+            if (isKidsPlay && !modalPreset) images = [view.imageUrl].filter(Boolean);
+            UIModule._buildSlider(images, view.emoji);
+        }
+
+        const modalCatEl = document.getElementById('modal-cat');
+        if (modalPreset?.hideCategory) {
+            modalCatEl.style.display = 'none';
+            modalCatEl.innerText = '';
+        } else {
+            modalCatEl.style.display = '';
+            modalCatEl.innerText = val(view, 'category');
+        }
+        document.getElementById('modal-title').innerText = val(view, 'name');
 
         // ステータス
-        const statusText = getSpotStatusText(spot);
+        const statusText = modalPreset?.hideStatus ? '' : getSpotStatusText(view);
         const statusWrap = document.getElementById('modal-status-wrap');
         const statusEl = document.getElementById('modal-status');
         if (statusText && statusWrap && statusEl) {
@@ -5260,7 +5380,7 @@ const UIModule = {
         }
 
         // 営業時間
-        const hoursText = val(spot, 'hours');
+        const hoursText = val(view, 'hours');
         const hoursWrap = document.getElementById('modal-hours-wrap');
         if (hoursText) {
             hoursWrap.style.display = 'flex';
@@ -5272,7 +5392,12 @@ const UIModule = {
         // タグ
         const tagsEl = document.getElementById('modal-tags');
         tagsEl.innerHTML = '';
-        const spotTags = (State.language === 'ja' ? spot.tags : spot.tags_en) || [];
+        if (modalPreset?.hideTags) {
+            tagsEl.style.display = 'none';
+        } else {
+            tagsEl.style.display = '';
+        }
+        const spotTags = modalPreset?.hideTags ? [] : ((State.language === 'ja' ? view.tags : view.tags_en) || []);
         spotTags.forEach(tag => {
             const chip = document.createElement('span');
             chip.className = 'tag-chip' + (State.selectedTags.has(tag) ? ' active' : '');
@@ -5281,9 +5406,10 @@ const UIModule = {
             tagsEl.appendChild(chip);
         });
 
-        const addrText = val(spot, 'address');
-        const phoneText = val(spot, 'phone');
-        const urlNorm = normalizeWebUrl(val(spot, 'url'));
+        const hideContactExtras = !!modalPreset?.hideContactExtras;
+        const addrText = val(view, 'address');
+        const phoneText = hideContactExtras ? '' : val(view, 'phone');
+        const urlNorm = hideContactExtras ? '' : normalizeWebUrl(val(view, 'url'));
         const contactEl = document.getElementById('modal-contact');
         const addrWrap = document.getElementById('modal-address-wrap');
         const phoneWrap = document.getElementById('modal-phone-wrap');
@@ -5330,15 +5456,15 @@ const UIModule = {
         livePostEl.innerHTML = '';
 
         const kawaraBtn = document.getElementById('modal-kawara-btn');
-        if (spot.livePost && kawaraBtn) {
+        if (spot.livePost && kawaraBtn && !modalPreset) {
             kawaraBtn.style.display = 'inline-flex';
             document.getElementById('modal-kawara-text').textContent = t('kawaraView');
         } else if (kawaraBtn) {
             kawaraBtn.style.display = 'none';
         }
 
-        const _descVal = val(spot, 'desc');
-        const _newsVal = val(spot, 'news');
+        const _descVal = val(view, 'desc');
+        const _newsVal = modalPreset?.hideNews ? '' : val(view, 'news');
         const descWrap = document.getElementById('modal-desc-wrap');
         const newsWrap = document.getElementById('modal-news-wrap');
         const descEl = document.getElementById('modal-desc');
@@ -5346,7 +5472,15 @@ const UIModule = {
         if (_descVal && descWrap && descEl) {
             descWrap.style.display = 'block';
             const descLabel = document.getElementById('modal-desc-label');
-            if (descLabel) descLabel.textContent = t('descLabel');
+            if (descLabel) {
+                if (modalPreset?.hideDescLabel) {
+                    descLabel.style.display = 'none';
+                    descLabel.textContent = '';
+                } else {
+                    descLabel.style.display = '';
+                    descLabel.textContent = t('descLabel');
+                }
+            }
             descEl.textContent = _descVal;
         } else if (descWrap) {
             descWrap.style.display = 'none';
@@ -5368,10 +5502,10 @@ const UIModule = {
         const sponsorLogoEl = document.getElementById('modal-sponsor-logo');
         const sponsorNameEl = document.getElementById('modal-sponsor-name');
         const sponsorLabelEl = document.getElementById('modal-sponsor-label');
-        const sponsorName = isKidsPlay ? (spot.tagline || '').trim() : '';
-        const sponsorLogo = isKidsPlay && spot.imageUrl3 ? spot.imageUrl3 : '';
+        const sponsorName = isKidsWakuwaku && !modalPreset?.hideSponsor ? (spot.tagline || '').trim() : '';
+        const sponsorLogo = isKidsWakuwaku && !modalPreset?.hideSponsor && spot.imageUrl3 ? spot.imageUrl3 : '';
         if (sponsorWrap && sponsorLogoEl && sponsorNameEl) {
-            if (isKidsPlay && (sponsorName || sponsorLogo)) {
+            if (isKidsWakuwaku && (sponsorName || sponsorLogo)) {
                 sponsorWrap.style.display = 'flex';
                 if (sponsorLabelEl) sponsorLabelEl.textContent = t('supportedBy');
                 sponsorNameEl.textContent = sponsorName;
