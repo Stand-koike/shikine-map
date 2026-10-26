@@ -2,7 +2,7 @@
  * エリア設定 — 敷根公園フェスマップ（shikine-map）
  *
  * イラスト対象: 総合運動公園（四隅・map.webp は QGIS 書き出し park_4326.tif 由来）。
- * ピン設計（飲食4 + 固定9）: web/docs/PIN_INVENTORY_SHIKINE.md
+ * ピン設計（飲食4 + 固定11）: web/docs/PIN_INVENTORY_SHIKINE.md
  *
  * ローカル微調整: config.local.js（Git 除外）
  *
@@ -344,8 +344,9 @@
                 category: 'library',
                 emoji: '📚',
                 imageUrl: 'assets/library/mobile-library-flyer.jpg',
-                desc: '公園で本との出会いを楽しもう！',
-                address: '飲食エリア'
+                desc: '2026年11月3日(火・祝)10:00〜16:00。公園で本との出会いを楽しもう！',
+                address: '飲食エリア',
+                hours: '10:00〜16:00'
             },
             ws_kids_core: {
                 name: 'キッズコアトレーニング',
@@ -354,7 +355,9 @@
                 category: 'ws_indoor',
                 emoji: '🏃',
                 imageUrl: 'assets/workshops/kids-core-training.webp',
-                url: 'https://logoform.jp/f/srRs9'
+                url: 'https://logoform.jp/f/srRs9',
+                hours: '12:15〜13:00',
+                desc: '2026年11月3日(火・祝)12:15〜13:00／場所：トレーニングルーム／対象：小学生／申込：QRから先着10名（参加費無料）'
             },
             ws_indoor_2: {
                 name: '屋内ワークショップ（事務所内）',
@@ -364,7 +367,8 @@
                 emoji: '🎨',
                 imageUrl: 'assets/workshops/ws-mini-haniwa.jpg',
                 imageUrl2: 'assets/workshops/ws-uehara-art-workshop.png',
-                desc: '【ミニミニはにわづくり】文化財を学びながら、ねんどではにわをつくろう！（事務所内）／【上原美術館連携アートワークショップ】フォトフレーム・缶バッジづくり（事務所内）'
+                desc: '2026年11月3日(火・祝)10:00〜16:00（事務所内）／【ミニミニはにわづくり】文化財を学びながら、ねんどではにわをつくろう！／【上原美術館連携アートワークショップ】フォトフレーム・缶バッジづくり',
+                hours: '10:00〜16:00'
             },
             pool_shikine: {
                 name: '敷根プール（無料開放）',
@@ -406,10 +410,23 @@
 
         PARK_INFO: {
             title: '敷根公園フェス 2026',
+            title_en: 'Shikine Park Fes 2026',
+            tagline: '公園まるっと、フェスな1日',
+            tagline_en: 'A whole park, a festival day',
             date: '2026年11月3日（火・祝）',
+            date_en: 'Tuesday, November 3, 2026 (public holiday)',
+            venue: '会場：敷根公園',
+            venue_en: 'Venue: Shikine Park',
             hours: '主な時間 10:00〜16:00（自然観察は 9:30〜）',
+            hours_en: 'Main hours 10:00–16:00 (nature walk from 9:30)',
             note: '入場無料',
-            contact: '下田市敷根公園屋内温水プール',
+            note_en: 'Free admission',
+            weatherNote: '荒天時の変更・中止は公式サイト・SNSでお知らせします。',
+            weatherNote_en: 'Schedule changes or cancellations due to weather will be announced on the official website and social media.',
+            organizers: '主催：下田市振興公社／共催：下田市教育委員会／協力：下田Baby&Kids、上原美術館',
+            organizers_en: 'Organizer: Shimoda City Promotion Foundation / Co-organizer: Shimoda City Board of Education / Cooperation: Shimoda Baby&Kids, Uehara Museum of Art',
+            contact: 'お問い合わせ：下田市敷根公園内温水プール',
+            contact_en: 'Inquiries: Shimoda Shikine Park indoor heated pool',
             phone: '0558-23-6333'
         },
 
