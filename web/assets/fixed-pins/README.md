@@ -6,6 +6,7 @@
 | ファイル | category | 件数 |
 |----------|----------|------|
 | `toilet.png` | `toilet` | 3 |
+| `parking.png` | `parking` | 1（白丸内 `P` は `FIXED_PIN_EMOJI_BY_STORE_ID.parking`） |
 | `stage.png` | `stage` | 1 |
 | `kids_play.png` | `kids_play` | 1 |
 | `ws_indoor.png` | `ws_indoor` | 2（キッズコア + 2件目） |
@@ -14,6 +15,6 @@
 
 事務所周辺の体験系 4 件は `FIXED_PIN_CATEGORY_BY_STORE_ID` で既存 PNG（`kids_play` / `stage` / `pool` / `ws_indoor`）を割り当て、中央は `FIXED_PIN_OVERLAY_BY_STORE_ID` の SVG。
 
-トイレはマップアイコンのみ（モーダルなし）。`parking.png` 等の外浦用ファイルは未使用です。
+トイレ・駐車場はマップアイコンのみ（モーダルなし）。
 
 画像がない category は絵文字フォールバックになります（本番では PNG 配置を推奨）。

@@ -158,6 +158,7 @@
 
         FIXED_PIN_ICONS: {
             toilet: 'toilet.png',
+            parking: 'parking.png',
             stage: 'stage.png',
             kids_play: 'kids_play.png',
             ws_indoor: 'ws_indoor.png',
@@ -193,7 +194,7 @@
             { contains: 'キッズコア', storeId: 'ws_kids_core' }
         ],
         /** 固定ピン画像の cache bust（SVG 差し替え時に更新） */
-        ASSET_VERSION: '20261027-pin-standard-base',
+        ASSET_VERSION: '20261027-parking-pin',
         /** 固定マスタに行が無い／store_id 空でもピンを出す */
         FIXED_MASTER_FALLBACK: [
             {
@@ -230,7 +231,8 @@
         },
         /** 固定ピン白丸内の絵文字（オーバーレイ画像より優先） */
         FIXED_PIN_EMOJI_BY_STORE_ID: {
-            kids_ground: '⚽'
+            kids_ground: '⚽',
+            parking: 'P'
         },
         /** 丸型ピン（店舗同型）— わくわく広場のみ */
         FIXED_PIN_CIRCULAR_LOGO_STORE_IDS: ['kids_wakuwaku'],
@@ -270,7 +272,7 @@
         VENDOR_PIN_SIZE: 48,
         VENDOR_PIN_SIZE_MOBILE: 35,
         /** タップしてもモーダルを開かない（マップアイコンのみ） */
-        FIXED_PIN_NO_MODAL: ['toilet'],
+        FIXED_PIN_NO_MODAL: ['toilet', 'parking'],
 
         /** LINE からの最新投稿をマップ／モーダルに出す（GAS 準備後に実投稿） */
         ENABLE_LIVE_POSTS: true,
@@ -396,6 +398,7 @@
         FIND_GROUPS: [
             { category: 'フードエリア', label: '飲食' },
             { category: 'toilet', label: 'トイレ' },
+            { category: 'parking', label: '駐車場' },
             { category: 'stage', label: 'ステージ' },
             { category: 'kids_play', label: 'キッズ' },
             { category: 'ws_indoor', label: 'ワークショップ' },
