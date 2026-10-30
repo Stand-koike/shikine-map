@@ -9,7 +9,7 @@
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
     <script src="line-contract.js"></script>
     <!-- 四隅変更時は ?v= を更新（GitHub Pages の config.js 長期キャッシュ対策） -->
-    <script src="config.js?v=20261030-park-flyer"></script>
+    <script src="config.js?v=20261030-timetable-time"></script>
     <script src="config.local.js" onerror="void 0"></script>
     <script>
         (function () {
@@ -2686,6 +2686,41 @@ window._gvizFixedCb = function(json) {
 // ================================================================
 // ScheduleModule — フェス全体タイムテーブル（event_schedule シート）
 // ================================================================
+
+/** Google Sheets / gviz の時刻セル → `HH:MM`（時刻のみセルは Date(1899,11,30,…) になる） */
+function formatSheetTimeValue(raw, formatted) {
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const fromClock = (s) => {
+        const m = String(s).trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+        return m ? `${pad2(Number(m[1]))}:${m[2]}` : '';
+    };
+
+    if (formatted != null && String(formatted).trim() !== '') {
+        const f = fromClock(formatted);
+        if (f) return f;
+    }
+    if (raw == null || raw === '') return '';
+
+    if (raw instanceof Date && !Number.isNaN(raw.getTime())) {
+        return `${pad2(raw.getHours())}:${pad2(raw.getMinutes())}`;
+    }
+    if (typeof raw === 'number' && Number.isFinite(raw)) {
+        const frac = ((raw % 1) + 1) % 1;
+        const totalMin = Math.round(frac * 24 * 60) % (24 * 60);
+        return `${pad2(Math.floor(totalMin / 60))}:${pad2(totalMin % 60)}`;
+    }
+
+    const s = String(raw).trim();
+    const clock = fromClock(s);
+    if (clock) return clock;
+
+    const gvizDate = s.match(/^Date\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*(\d+))?\s*\)$/);
+    if (gvizDate) {
+        return `${pad2(Number(gvizDate[4]))}:${pad2(Number(gvizDate[5]))}`;
+    }
+    return s;
+}
+
 const ScheduleModule = {
 
     _fetchTimeout: null,
@@ -2770,6 +2805,13 @@ const ScheduleModule = {
             const v = row.c[idx]?.v;
             return v != null ? String(v).trim() : '';
         };
+        const timeCell = (row, key) => {
+            const idx = COL[key];
+            if (idx == null) return '';
+            const c = row.c[idx];
+            if (!c) return '';
+            return formatSheetTimeValue(c.v, c.f);
+        };
         if (!json?.table?.rows) return [];
 
         const items = json.table.rows.reduce((acc, row) => {
@@ -2781,8 +2823,8 @@ const ScheduleModule = {
             const description = cell(row, 'DESCRIPTION');
             const venue = cell(row, 'VENUE');
             const eventDate = cell(row, 'EVENT_DATE');
-            const startTime = cell(row, 'START_TIME');
-            const endTime = cell(row, 'END_TIME');
+            const startTime = timeCell(row, 'START_TIME');
+            const endTime = timeCell(row, 'END_TIME');
             const sortRaw = cell(row, 'SORT_ORDER');
             const sortOrder = sortRaw !== '' && Number.isFinite(Number(sortRaw)) ? Number(sortRaw) : 9999;
             const imageUrl = resolveSheetMediaUrl(cell(row, 'IMAGE_URL'));
@@ -2808,7 +2850,8 @@ const ScheduleModule = {
 
     _timeToMinutes(t) {
         if (!t) return 9999;
-        const m = String(t).trim().match(/^(\d{1,2}):(\d{2})/);
+        const norm = formatSheetTimeValue(t);
+        const m = String(norm).trim().match(/^(\d{1,2}):(\d{2})/);
         if (!m) return 9999;
         return Number(m[1]) * 60 + Number(m[2]);
     },
@@ -5258,8 +5301,8 @@ const UIModule = {
     },
 
     _formatTimetableTime(item) {
-        const s = item.startTime || '';
-        const e = item.endTime || '';
+        const s = formatSheetTimeValue(item.startTime);
+        const e = formatSheetTimeValue(item.endTime);
         if (s && e) return `${s}–${e}`;
         if (s) return `${s}〜`;
         return '—';
