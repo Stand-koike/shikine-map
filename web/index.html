@@ -4733,14 +4733,7 @@ const UIModule = {
     _bindFixedMarkerClick(spot, el) {
         el.addEventListener('click', e => {
             e.stopPropagation();
-            document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('active'));
-            el.classList.add('active');
-            const noModal = FixedPinModule.categorySkipsModal(spot.category);
-            if (noModal) {
-                if (MapModule.flyTo) MapModule.flyTo(spot);
-                return;
-            }
-            UIModule.openModal(spot.id);
+            App.selectSpot(spot);
         });
     },
 
@@ -5291,10 +5284,7 @@ const UIModule = {
         const spots = ids.map(id => this._findSpotByStoreId(id)).filter(Boolean);
         this.applyPinEmphasis();
         if (spots.length === 1) {
-            const spot = spots[0];
-            const noModal = (CONFIG.FIXED_PIN_NO_MODAL || []).indexOf(spot.category) !== -1;
-            App.selectSpot(spot);
-            if (!noModal) this.openModal(spot.id);
+            App.selectSpot(spots[0]);
             return;
         }
         if (spots.length > 1 && MapModule.fitToSpots) MapModule.fitToSpots(spots);
@@ -6257,6 +6247,62 @@ const App = {
         this._applyFilters();
     },
 
+    _spotHasSlideCard(spot) {
+        if (!spot?.id) return false;
+        return !!(document.getElementById(`card-${spot.id}`)
+            || document.querySelector(`[id^="card-${spot.id}__flyer_"]`));
+    },
+
+    _isFixedMapSpot(spot) {
+        if (!spot) return false;
+        if (spot.isFixed) return true;
+        const sid = normalizeStoreId_(spot.storeId);
+        return !!(sid && State.fixedSpots.some(s => normalizeStoreId_(s.storeId) === sid));
+    },
+
+    _cardSpotForSelection(spot) {
+        if (!this._isFixedMapSpot(spot)) return spot;
+        return this.getPlayTabBaseSpot(spot.storeId) || spot;
+    },
+
+    /** ホーム／食べるタブで固定ピン用カードが未描画なら、該当フライヤーを先頭に足す */
+    _ensureCardsForFixedSpot(mapSpot) {
+        const cardSpot = this._cardSpotForSelection(mapSpot);
+        if (this._spotHasSlideCard(cardSpot)) return;
+        if (!this._isFixedMapSpot(mapSpot)) return;
+
+        const sid = normalizeStoreId_(mapSpot.storeId);
+        if (!sid) return;
+
+        if (State.bottomNavMode === 'play') {
+            UIModule.renderCards(this.getPlayTabCardSpots());
+            return;
+        }
+
+        const pinnedCards = this.getPlayTabCardSpots().filter(c => {
+            const base = this.resolveSpotFromCard(c);
+            return normalizeStoreId_(base?.storeId) === sid;
+        });
+        if (!pinnedCards.length) return;
+
+        let existing = [];
+        if (State.bottomNavMode === 'food') {
+            const foodSpots = this.getFoodAreaSpots();
+            existing = foodSpots.length ? foodSpots : State.allSpots;
+        } else {
+            existing = State.allSpots;
+        }
+
+        const seen = new Set();
+        const merged = [];
+        [...pinnedCards, ...existing].forEach(s => {
+            if (!s?.id || seen.has(s.id)) return;
+            seen.add(s.id);
+            merged.push(s);
+        });
+        UIModule.renderCards(merged);
+    },
+
     selectSpot(spot) {
         State.currentSpot = spot;
         document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('active'));
@@ -6275,7 +6321,9 @@ const App = {
         }
         activateMarker();
         UIModule.expandCardsSheetIfCollapsed();
-        UIModule.highlightCard(spot);
+        const cardSpot = this._cardSpotForSelection(spot);
+        this._ensureCardsForFixedSpot(spot);
+        UIModule.highlightCard(cardSpot);
         gtag('event', 'select_content', { content_type: 'spot', item_id: spot.name });
     },
 
