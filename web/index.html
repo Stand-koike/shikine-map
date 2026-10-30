@@ -9,7 +9,7 @@
     <script src="secrets.local.js" onerror="window.__SHIMODA_MAP_SECRETS__=window.__SHIMODA_MAP_SECRETS__||{}"></script>
     <script src="line-contract.js"></script>
     <!-- 四隅変更時は ?v= を更新（GitHub Pages の config.js 長期キャッシュ対策） -->
-    <script src="config.js?v=20261027-parking-pin"></script>
+    <script src="config.js?v=20261030-park-flyer"></script>
     <script src="config.local.js" onerror="void 0"></script>
     <script>
         (function () {
@@ -381,6 +381,9 @@
         .timetable-item:active { background: #f5f5f5; }
         .park-info { padding: 16px 18px; font-size: 14px; line-height: 1.55; color: #333; }
         .park-info p { margin: 0 0 8px; }
+        .park-info-tagline { font-size: 13px; color: #0077B6; }
+        .park-info-organizers { font-size: 12px; color: #555; }
+        .park-info-note { font-size: 13px; color: #444; }
         .find-hint { font-size: 11px; color: #888; margin: 0 0 8px; line-height: 1.4; }
 
         /* ドロップダウンパネル共通 */
@@ -5188,17 +5191,28 @@ const UIModule = {
         this.closeTimetable(null, true);
         this.closePanelOverlay();
         const info = CONFIG.PARK_INFO || {};
+        const pick = (key) => {
+            if (State.language === 'en' && info[key + '_en']) return info[key + '_en'];
+            return info[key] || '';
+        };
         document.getElementById('park-sheet-title').innerText = t('parkTitle');
         const parkBtn = document.getElementById('park-btn-text');
         if (parkBtn) parkBtn.innerText = t('parkTitle');
         const body = document.getElementById('park-content');
         const tel = (info.phone || '').replace(/[^\d+]/g, '');
+        const tagline = pick('tagline');
+        const organizers = pick('organizers');
+        const weatherNote = pick('weatherNote');
         body.innerHTML = `<div class="park-info">
-            <p><strong>${escapeHtml(info.title || '')}</strong></p>
-            <p>${escapeHtml(info.date || '')}</p>
-            <p>${escapeHtml(info.hours || '')}</p>
-            <p>${escapeHtml(info.note || '')}</p>
-            <p>${escapeHtml(info.contact || '')}</p>
+            <p><strong>${escapeHtml(pick('title'))}</strong></p>
+            ${tagline ? `<p class="park-info-tagline">${escapeHtml(tagline)}</p>` : ''}
+            <p>${escapeHtml(pick('date'))}</p>
+            <p>${escapeHtml(pick('venue'))}</p>
+            <p>${escapeHtml(pick('hours'))}</p>
+            <p>${escapeHtml(pick('note'))}</p>
+            ${weatherNote ? `<p class="park-info-note">${escapeHtml(weatherNote)}</p>` : ''}
+            ${organizers ? `<p class="park-info-organizers">${escapeHtml(organizers)}</p>` : ''}
+            <p>${escapeHtml(pick('contact'))}</p>
             ${info.phone ? `<p><a href="tel:${escapeHtml(tel)}">${escapeHtml(info.phone)}</a></p>` : ''}
         </div>`;
         const el = document.getElementById('park-overlay');
@@ -6130,6 +6144,8 @@ const App = {
         if (ttText) ttText.innerText = t('timetableTitle');
         const parkText = document.getElementById('park-btn-text');
         if (parkText) parkText.innerText = t('parkTitle');
+        const parkOverlay = document.getElementById('park-overlay');
+        if (parkOverlay?.classList.contains('open')) UIModule.openParkInfo();
         const playText = document.getElementById('play-btn-text');
         if (playText) playText.innerText = t('playTab');
         const foodText = document.getElementById('food-btn-text');
