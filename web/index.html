@@ -403,8 +403,8 @@
             padding: 10px 0 4px; cursor: pointer;
         }
         .sheet-handle-pill {
-            display: block; width: 40px; height: 4px; border-radius: 4px;
-            background: #ccc; margin: 0 auto;
+            display: block; width: 40px; height: 5px; border-radius: 5px;
+            background: rgba(68, 138, 62, 0.28); margin: 0 auto;
         }
         .bottom-sheet .news-list-header { flex: 0 0 auto; }
         .bottom-sheet .news-list-body {
@@ -413,7 +413,7 @@
             overscroll-behavior: contain;
         }
         .timetable-item { cursor: pointer; }
-        .timetable-item:active { background: #f5f5f5; }
+        .timetable-item:active { background: var(--fes-green-light); }
         .park-info { padding: 16px 18px; font-size: 14px; line-height: 1.55; color: #333; }
         .park-info p { margin: 0 0 8px; }
         .park-info-tagline { font-size: 13px; color: var(--fes-blue); }
@@ -1348,36 +1348,72 @@
 
         /* ニュース一覧モーダル */
         .news-list-card {
-            background: white; width: 90%; max-width: 450px; max-height: 80vh;
+            background: var(--fes-cream); width: 90%; max-width: 450px; max-height: 80vh;
             border-radius: 20px; display: flex; flex-direction: column;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: popIn 0.3s ease-out;
+            border: 2px solid var(--fes-card-border);
+            box-shadow: 0 10px 40px rgba(44, 74, 94, 0.22); animation: popIn 0.3s ease-out;
+            overflow: hidden;
         }
+        .news-list-card .news-list-body {
+            background: #fff;
+        }
+        /* ニュース一覧・シート共通ヘッダー（ポスター配色） */
         .news-list-header {
-            background: var(--color-accent); color: white; padding: 15px 20px;
-            font-weight: bold; display: flex; justify-content: space-between;
-            align-items: center; border-radius: 20px 20px 0 0; flex-shrink: 0;
+            color: #fff;
+            padding: 14px 18px;
+            font-weight: 800;
+            font-size: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            letter-spacing: 0.02em;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.22);
+        }
+        .sheet-header--timetable {
+            background: linear-gradient(135deg, #5EB8E8 0%, var(--fes-blue) 100%);
+            border-radius: 14px 14px 0 0;
+        }
+        .sheet-header--park {
+            background: linear-gradient(135deg, #6BAF65 0%, var(--fes-green) 100%);
+            border-radius: 14px 14px 0 0;
+        }
+        .sheet-header--news {
+            background: linear-gradient(135deg, #FFAB66 0%, var(--fes-orange) 100%);
+            border-radius: 18px 18px 0 0;
+        }
+        #timetable-overlay .news-list-body,
+        #park-overlay .news-list-body {
+            background: var(--fes-cream);
         }
         .news-list-body { overflow-y: auto; flex: 1; }
         .timetable-item {
-            padding: 12px 14px; border-bottom: 1px solid #eee;
+            padding: 12px 14px; border-bottom: 1px solid rgba(68, 138, 62, 0.1);
             display: flex; gap: 12px; align-items: flex-start;
+            background: #fff;
+        }
+        .bottom-sheet .timetable-item:nth-child(odd) {
+            background: rgba(255, 255, 255, 0.72);
         }
         .timetable-time {
-            flex: 0 0 72px; font-size: 13px; font-weight: bold;
-            color: var(--color-primary); line-height: 1.35;
+            flex: 0 0 auto; min-width: 58px; font-size: 11px; font-weight: 800;
+            color: #fff; line-height: 1.35; text-align: center;
+            background: var(--fes-green);
+            padding: 5px 8px; border-radius: 999px;
         }
         .timetable-main { flex: 1; min-width: 0; }
-        .timetable-title { font-weight: bold; font-size: 14px; margin-bottom: 2px; }
-        .timetable-performer { font-size: 14px; color: #333; }
-        .timetable-desc { font-size: 12px; color: #666; margin-top: 4px; line-height: 1.45; }
+        .timetable-title { font-weight: bold; font-size: 14px; margin-bottom: 2px; color: var(--fes-green-dark); }
+        .timetable-performer { font-size: 14px; color: var(--color-text-main); }
+        .timetable-desc { font-size: 12px; color: var(--color-text-sub); margin-top: 4px; line-height: 1.45; }
         .timetable-venue {
-            font-size: 11px; color: #888; margin-top: 4px;
+            font-size: 11px; color: var(--fes-blue); margin-top: 4px; font-weight: 700;
         }
         @media (max-width: 767px) {
             .timetable-item { padding: 10px 12px; gap: 10px; }
             .timetable-time {
-                flex: 0 0 62px;
-                font-size: 12px;
+                min-width: 52px;
+                font-size: 10px;
+                padding: 4px 6px;
             }
         }
         .modal-sponsor {
@@ -1389,13 +1425,14 @@
             width: 36px; height: 36px; object-fit: contain; flex-shrink: 0;
         }
         .news-list-close {
-            background: rgba(0,0,0,0.1); color: white; border: none; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.22); color: white; border: 1.5px solid rgba(255, 255, 255, 0.35);
+            border-radius: 50%;
             width: 32px; height: 32px; cursor: pointer; font-size: 16px;
             display: flex; align-items: center; justify-content: center; transition: background 0.2s;
         }
-        .news-list-close:hover { background: rgba(0,0,0,0.2); }
-        .news-item { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: background 0.2s; }
-        .news-item:hover { background: #f9f9f9; }
+        .news-list-close:hover { background: rgba(255, 255, 255, 0.32); }
+        .news-item { padding: 15px 20px; border-bottom: 1px solid rgba(68, 138, 62, 0.1); cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: background 0.2s; }
+        .news-item:hover { background: var(--fes-green-light); }
         .news-item:last-child { border-bottom: none; }
         .news-item-icon { color: var(--color-accent); margin-top: 2px; font-size: 16px; }
 
@@ -1994,7 +2031,7 @@
     <button type="button" class="sheet-handle" onclick="UIModule.toggleTimetableHeight()" aria-label="高さを切り替える">
         <span class="sheet-handle-pill"></span>
     </button>
-    <div class="news-list-header">
+    <div class="news-list-header sheet-header sheet-header--timetable">
         <span id="timetable-title">タイムテーブル</span>
         <button class="news-list-close" type="button" onclick="UIModule.closeTimetable(null, true)">
             <i class="fas fa-times"></i>
@@ -2008,7 +2045,7 @@
     <button type="button" class="sheet-handle" onclick="UIModule.toggleParkHeight()" aria-label="高さを切り替える">
         <span class="sheet-handle-pill"></span>
     </button>
-    <div class="news-list-header">
+    <div class="news-list-header sheet-header sheet-header--park">
         <span id="park-sheet-title">公園</span>
         <button class="news-list-close" type="button" onclick="UIModule.closeParkInfo(true)">
             <i class="fas fa-times"></i>
@@ -2020,7 +2057,7 @@
 <!-- ニュース一覧モーダル -->
 <div class="modal-overlay" id="news-list-overlay" onclick="UIModule.closeNewsList(event)">
     <div class="news-list-card">
-        <div class="news-list-header">
+        <div class="news-list-header sheet-header sheet-header--news">
             <span id="news-list-title">お知らせ一覧</span>
             <button class="news-list-close" onclick="UIModule.closeNewsList(null, true)">
                 <i class="fas fa-times"></i>
