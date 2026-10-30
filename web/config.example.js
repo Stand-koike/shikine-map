@@ -38,7 +38,7 @@
             TAGS_EN: 30, HOURS_EN: 31, TAGLINE: 32, TAGLINE_EN: 33
         },
 
-        COLORS: { DEFAULT: '#0096C7', RED: '#FF5252', YELLOW: '#FFCA28' },
+        COLORS: { DEFAULT: '#448A3E', RED: '#E85D4A', YELLOW: '#FFC857' },
 
         MAP_IMAGE: {
             url:        'map_day.png',
